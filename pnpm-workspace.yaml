@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+  - services/mock-sources
+
+# Both fall back to prebuilt or pure-JS code without their install scripts.
+allowBuilds:
+  esbuild: false
+  msgpackr-extract: false

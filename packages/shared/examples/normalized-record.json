@@ -1,0 +1,24 @@
+{
+  "source": "source_a",
+  "source_id": "a-1",
+  "original_url": "https://example.org/a/1",
+  "source_updated_at": "2026-11-25T10:00:00Z",
+  "type": "sme",
+  "name": "Αρτοποιείο Παράδειγμα",
+  "description": "Παραδοσιακό ψωμί και γλυκά",
+  "sector": "food",
+  "region": "Attica",
+  "skills": [
+    "baking"
+  ],
+  "services": [
+    "φρέσκο ψωμί"
+  ],
+  "needs": [
+    "web development"
+  ],
+  "languages": [
+    "el"
+  ],
+  "website": null
+}

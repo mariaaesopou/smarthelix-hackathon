@@ -1,0 +1,11 @@
+{
+  "profile_id": "b0000000-0000-4000-8000-000000000001",
+  "partner_id": "b0000000-0000-4000-8000-000000000003",
+  "rank": 1,
+  "score": 0.93,
+  "reasons": {
+    "matched_needs": [
+      "web development"
+    ]
+  }
+}

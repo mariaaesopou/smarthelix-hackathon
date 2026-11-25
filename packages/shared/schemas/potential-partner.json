@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PotentialPartner",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "partner_id",
+    "rank",
+    "score",
+    "reasons"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "partner_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "rank": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "score": {
+      "type": "number"
+    },
+    "reasons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matched_needs"
+      ],
+      "properties": {
+        "matched_needs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+name: smarthelix
+
+x-db-url: &db-url postgres://${POSTGRES_USER:-smarthelix}:${POSTGRES_PASSWORD:-smarthelix_dev}@postgres:5432/${POSTGRES_DB:-smarthelix}?sslmode=disable
+
+services:
+  postgres:
+    image: postgres:17.12
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-smarthelix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smarthelix_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-smarthelix}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/seeds:/seeds:ro
+      - ./db/tests:/dbtests:ro
+    healthcheck:
+      # -h forces TCP: the temporary init server only listens on the socket.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--maxmemory-policy", "noeviction"]
+    ports: ["127.0.0.1:6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    image: ghcr.io/amacneil/dbmate:2.26.0
+    command: ["--no-dump-schema", "up"]
+    environment:
+      DATABASE_URL: *db-url
+      DBMATE_MIGRATIONS_DIR: /db/migrations
+    volumes: ["./db/migrations:/db/migrations:ro"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: { context: ., args: { APP_DIR: apps/api } }
+    environment:
+      DATABASE_URL: *db-url
+      REDIS_URL: redis://redis:6379
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  worker:
+    build: { context: ., args: { APP_DIR: apps/worker } }
+    environment:
+      DATABASE_URL: *db-url
+      REDIS_URL: redis://redis:6379
+      MOCK_SOURCES_URL: http://mock-sources:4000
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  web:
+    build: { context: ., args: { APP_DIR: apps/web } }
+    ports: ["127.0.0.1:5173:5173"]
+    depends_on: [api]
+
+  mock-sources:
+    build: { context: ., args: { APP_DIR: services/mock-sources } }
+    ports: ["127.0.0.1:4000:4000"]
+
+  # pnpm generate:py. Not started by `docker compose up`.
+  codegen-py:
+    profiles: [tools]
+    image: python:3.11-slim
+    working_dir: /repo
+    volumes: [".:/repo"]
+    command:
+      - sh
+      - -c
+      - >-
+        pip install -q --root-user-action=ignore datamodel-code-generator==0.102.0 &&
+        datamodel-codegen --input packages/shared/schemas --input-file-type jsonschema
+        --output services/pipeline/src/pipeline/generated
+        --output-model-type pydantic_v2.BaseModel
+        --target-python-version 3.11 --disable-timestamp
+
+volumes:
+  pgdata:
