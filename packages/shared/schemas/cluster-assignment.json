@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClusterAssignment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "cluster_id",
+    "label"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "cluster_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "label": {
+      "type": "string"
+    }
+  }
+}

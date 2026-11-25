@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResolutionJob",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sync_run_id"
+  ],
+  "properties": {
+    "sync_run_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

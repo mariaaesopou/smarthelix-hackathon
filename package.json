@@ -1,0 +1,15 @@
+{
+  "name": "smarthelix-hackathon",
+  "private": true,
+  "packageManager": "pnpm@12.23.0",
+  "scripts": {
+    "dev": "docker compose up --build",
+    "generate": "pnpm --filter @smarthelix/shared generate && pnpm generate:py",
+    "generate:py": "docker compose --profile tools run --rm codegen-py",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate": "docker compose run --rm migrate",
+    "db:seed": "docker compose exec -T postgres bash /dbtests/run.sh /seeds/001_dev.sql",
+    "db:test": "docker compose exec -T postgres bash /dbtests/run.sh /dbtests/schema.sql"
+  }
+}

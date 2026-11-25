@@ -1,0 +1,8 @@
+{
+  "name": "@smarthelix/api",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "tsx src/server.ts", "typecheck": "tsc" },
+  "dependencies": { "fastify": "5.12.8", "pg": "8.23.1", "tsx": "4.23.15" },
+  "devDependencies": { "@types/node": "^22.0.0", "@types/pg": "8.23.1", "typescript": "5.9.3" }
+}
