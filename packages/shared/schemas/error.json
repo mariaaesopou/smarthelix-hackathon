@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "error.json",
+  "title": "ApiError",
+  "description": "Body of every API error response (Fastify's default shape).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "statusCode",
+    "error",
+    "message"
+  ],
+  "properties": {
+    "statusCode": {
+      "type": "integer",
+      "minimum": 400,
+      "maximum": 599
+    },
+    "error": {
+      "description": "HTTP status text, such as Not Found.",
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string"
+    }
+  }
+}

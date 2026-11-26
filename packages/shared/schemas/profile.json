@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile.json",
   "title": "Profile",
   "type": "object",
   "additionalProperties": false,
@@ -16,7 +17,8 @@
     "languages",
     "website",
     "updated_at",
-    "sources"
+    "sources",
+    "cluster"
   ],
   "properties": {
     "id": {
@@ -112,6 +114,27 @@
             "type": "string",
             "format": "uri"
           }
+        }
+      }
+    },
+    "cluster": {
+      "description": "Current clustering result, or null before the first clustering run.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "label": {
+          "type": "string"
         }
       }
     }

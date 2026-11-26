@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "source-b-record.json",
+  "title": "SourceBRecord",
+  "description": "One freelancer as source B sends it in /b/export.json. The connector maps it to NormalizedRecord; every record has type freelancer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ref",
+    "fullName",
+    "bio",
+    "field",
+    "area",
+    "expertise",
+    "offers",
+    "seeking",
+    "speaks",
+    "homepage",
+    "profileLink",
+    "modifiedAt",
+    "hourlyRate",
+    "availability"
+  ],
+  "properties": {
+    "ref": {
+      "description": "Maps to source_id.",
+      "type": "string",
+      "minLength": 1
+    },
+    "fullName": {
+      "description": "Maps to name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "bio": {
+      "description": "Maps to description.",
+      "type": "string"
+    },
+    "field": {
+      "description": "Maps to sector.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "area": {
+      "description": "Maps to region.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expertise": {
+      "description": "Maps to skills.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "offers": {
+      "description": "Maps to services.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "seeking": {
+      "description": "Maps to needs.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "speaks": {
+      "description": "Maps to languages.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "homepage": {
+      "description": "Maps to website.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri"
+    },
+    "profileLink": {
+      "description": "Maps to original_url.",
+      "type": "string",
+      "format": "uri"
+    },
+    "modifiedAt": {
+      "description": "Maps to source_updated_at.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "hourlyRate": {
+      "description": "Not in the common schema; the connector must not store it.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "availability": {
+      "description": "Not in the common schema; the connector must not store it.",
+      "type": "string",
+      "enum": [
+        "full-time",
+        "part-time",
+        "weekends"
+      ]
+    }
+  }
+}

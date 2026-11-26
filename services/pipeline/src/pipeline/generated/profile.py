@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field, constr
+from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field, conint, constr
 
 
 class Type(StrEnum):
@@ -22,6 +22,14 @@ class Source(BaseModel):
     name: str
     url: AnyUrl
     original_url: AnyUrl
+
+
+class Cluster(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id: conint(ge=0)
+    label: str
 
 
 class Profile(BaseModel):
@@ -41,3 +49,7 @@ class Profile(BaseModel):
     website: AnyUrl | None
     updated_at: AwareDatetime
     sources: list[Source] = Field(..., min_length=1)
+    cluster: Cluster | None = Field(
+        ...,
+        description='Current clustering result, or null before the first clustering run.',
+    )

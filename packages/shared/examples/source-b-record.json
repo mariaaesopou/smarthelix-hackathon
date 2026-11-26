@@ -1,0 +1,31 @@
+{
+  "ref": "b-seed-703",
+  "fullName": "Gaia Creative",
+  "bio": "Gaia Creative specialises in προσβασιμότητα and καινοτομία. We offer λογότυπο και branding and communication.",
+  "field": null,
+  "area": "South Aegean",
+  "expertise": [
+    "προσβασιμότητα",
+    "καινοτομία",
+    "baking"
+  ],
+  "offers": [
+    "λογότυπο και branding",
+    "communication",
+    "app prototypes",
+    "creativity"
+  ],
+  "seeking": [
+    "βελτιστοποίηση SEO",
+    "προσαρμοσμένο λογισμικό"
+  ],
+  "speaks": [
+    "el",
+    "en"
+  ],
+  "homepage": null,
+  "profileLink": "https://example.org/source_b/b-seed-703",
+  "modifiedAt": "2026-05-28T17:48:00Z",
+  "hourlyRate": 45,
+  "availability": "part-time"
+}

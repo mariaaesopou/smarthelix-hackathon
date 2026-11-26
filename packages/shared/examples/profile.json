@@ -22,8 +22,12 @@
   "sources": [
     {
       "name": "source_a",
-      "url": "http://mock-sources:4000/a",
+      "url": "http://localhost:4000/a",
       "original_url": "https://example.org/a/1"
     }
-  ]
+  ],
+  "cluster": {
+    "id": 1,
+    "label": "food"
+  }
 }
