@@ -2,6 +2,13 @@ name: smarthelix
 
 x-db-url: &db-url postgres://${POSTGRES_USER:-smarthelix}:${POSTGRES_PASSWORD:-smarthelix_dev}@postgres:5432/${POSTGRES_DB:-smarthelix}?sslmode=disable
 
+# Health check for the Node services: GET <url> must answer 2xx.
+x-node-health: &node-health
+  interval: 5s
+  timeout: 3s
+  retries: 20
+  start_period: 10s
+
 services:
   postgres:
     image: postgres:17.12
@@ -43,32 +50,54 @@ services:
 
   api:
     build: { context: ., args: { APP_DIR: apps/api } }
+    restart: unless-stopped
     environment:
       DATABASE_URL: *db-url
       REDIS_URL: redis://redis:6379
     ports: ["127.0.0.1:3000:3000"]
+    healthcheck:
+      <<: *node-health
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
 
   worker:
     build: { context: ., args: { APP_DIR: apps/worker } }
+    restart: unless-stopped
     environment:
       DATABASE_URL: *db-url
       REDIS_URL: redis://redis:6379
       MOCK_SOURCES_URL: http://mock-sources:4000
+      ERASURE_HMAC_SECRET: ${ERASURE_HMAC_SECRET:-}
+    # Snapshots, models and benchmark data; data/ is git-ignored.
+    volumes: ["./data:/repo/data"]
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
+      mock-sources: { condition: service_healthy }
 
   web:
     build: { context: ., args: { APP_DIR: apps/web } }
+    restart: unless-stopped
+    environment:
+      # File events do not reach containers from Windows or macOS hosts.
+      VITE_WATCH_POLLING: "true"
+    # Source mounted for hot reload; dependencies stay in the image.
+    volumes:
+      - ./apps/web/src:/repo/apps/web/src
+      - ./apps/web/index.html:/repo/apps/web/index.html
     ports: ["127.0.0.1:5173:5173"]
-    depends_on: [api]
+    depends_on:
+      api: { condition: service_healthy }
 
   mock-sources:
     build: { context: ., args: { APP_DIR: services/mock-sources } }
+    restart: unless-stopped
     ports: ["127.0.0.1:4000:4000"]
+    healthcheck:
+      <<: *node-health
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 
   # pnpm generate:py. Not started by `docker compose up`.
   codegen-py:

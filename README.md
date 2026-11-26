@@ -44,6 +44,10 @@ docker compose up --build
 
 Defaults work as they are; edit `.env` only to change them.
 
+Services start in order once their dependencies are healthy, and restart if they
+crash. The web app reloads when you save a file in `apps/web/src`; for other
+changes, run `docker compose up --build` again.
+
 | Service | Address |
 |---|---|
 | Web | http://localhost:5173 |
