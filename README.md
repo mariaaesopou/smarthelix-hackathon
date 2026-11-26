@@ -83,7 +83,16 @@ API, worker and pipeline tests: TBD.
 pnpm db:seed      # synthetic data; needs the stack running
 ```
 
-Files in `data/` are git-ignored. Larger synthetic dataset: TBD.
+`db:seed` loads `db/seeds/001_dev.sql` (4 hand-written profiles with ML results)
+and `db/seeds/002_profiles.sql` (2,000 generated profiles). Both are safe to run
+again. To regenerate the 2,000 profiles and the mock-source data:
+
+```bash
+python benchmarks/generate/generate_seed_profiles.py
+```
+
+The sources themselves come from a migration, so a database without seeds still
+has `source_a` and `source_b`. Files in `data/` are git-ignored.
 
 ## Benchmark
 
