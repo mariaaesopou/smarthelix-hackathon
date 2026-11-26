@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "source-a-record.json",
+  "title": "SourceARecord",
+  "description": "One profile as source A (SME platform) sends it from GET /a/profiles. The connector maps it to NormalizedRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "company_name",
+    "category",
+    "summary",
+    "industry",
+    "location",
+    "capabilities",
+    "products",
+    "looking_for",
+    "languages",
+    "website",
+    "profile_url",
+    "last_modified"
+  ],
+  "properties": {
+    "id": {
+      "description": "Maps to source_id.",
+      "type": "string",
+      "minLength": 1
+    },
+    "company_name": {
+      "description": "Maps to name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "description": "SME maps to type sme, Startup to young_entrepreneur.",
+      "type": "string",
+      "enum": [
+        "SME",
+        "Startup"
+      ]
+    },
+    "summary": {
+      "description": "Maps to description.",
+      "type": "string"
+    },
+    "industry": {
+      "description": "Maps to sector.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location": {
+      "description": "Maps to region.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "capabilities": {
+      "description": "Maps to skills.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "products": {
+      "description": "Maps to services.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "looking_for": {
+      "description": "Maps to needs.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "website": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri"
+    },
+    "profile_url": {
+      "description": "Maps to original_url.",
+      "type": "string",
+      "format": "uri"
+    },
+    "last_modified": {
+      "description": "Maps to source_updated_at; also the updated_since cursor.",
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
