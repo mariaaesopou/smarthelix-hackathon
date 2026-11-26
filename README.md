@@ -21,7 +21,8 @@ request path.
 | Folder | Contents |
 |---|---|
 | `apps/web`, `apps/api`, `apps/worker` | React front-end; Fastify API; queue worker |
-| `services/pipeline` | Python: connectors, ETL, resolution, Spark jobs, evaluation |
+| `services/pipeline` | Python: connectors, ETL, resolution, Spark job runner |
+| `services/ml` | PySpark ML functions: preprocessing, similarity, matchmaking, clustering, benchmark |
 | `services/mock-sources` | Mock external sources |
 | `packages/shared` | JSON Schemas, examples, generated types, constants |
 | `db` | `migrations`, `seeds`, `tests` |

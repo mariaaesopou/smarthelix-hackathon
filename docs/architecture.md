@@ -30,7 +30,8 @@ so it can retry without fetching again. Spark never runs in the request path.
 | Folder | Contents |
 |---|---|
 | `apps/web`, `apps/api`, `apps/worker` | React; Fastify; BullMQ consumers, sweep, process launcher |
-| `services/pipeline` | Python: connectors, etl, resolution, spark_jobs, evaluation, erasure |
+| `services/pipeline` | Python: connectors, etl, resolution, erasure, and spark_jobs (the runner that loads data, calls `services/ml` and writes the ML tables) |
+| `services/ml` | PySpark ML functions (preprocessing, similarity, matchmaking, clustering), evaluation and the LSH benchmark code |
 | `services/mock-sources` | Mock source A API and source B export |
 | `packages/shared` | JSON Schemas (source of truth), examples, generated types, constants |
 | `db` | Migrations, seeds, schema tests |
