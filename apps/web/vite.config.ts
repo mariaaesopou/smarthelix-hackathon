@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    watch: { usePolling: process.env.VITE_WATCH_POLLING === "true" },
     proxy: {
       "/api": { target: "http://api:3000", rewrite: (p) => p.replace(/^\/api/, "") },
     },
