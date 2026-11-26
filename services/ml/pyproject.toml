@@ -3,7 +3,7 @@ name = "smarthelix-ml"
 version = "0.1.0"
 description = "Role 2 ML functions: preprocessing, similarity, matchmaking, clustering, LSH benchmark"
 requires-python = ">=3.11,<3.12"
-dependencies = ["pyspark==3.5.1"]
+dependencies = ["pyspark[ml]==3.5.1"]  # the ml extra brings numpy, which pyspark.ml imports
 
 [dependency-groups]
 dev = ["pytest>=8"]
