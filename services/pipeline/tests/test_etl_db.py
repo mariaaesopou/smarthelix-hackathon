@@ -1,4 +1,7 @@
-"""ETL against the local compose database, inside a transaction that is rolled back."""
+"""ETL against the local compose database, inside a transaction that is rolled back.
+
+Fails when the database is unreachable; SKIP_DB_TESTS=1 skips on purpose.
+"""
 
 import os
 from datetime import datetime, timezone
@@ -52,10 +55,14 @@ class FakeConnector:
 
 @pytest.fixture
 def conn():
+    # An unreachable database FAILS these tests, so a stopped stack can never look like
+    # a pass; set SKIP_DB_TESTS=1 to skip them on purpose.
+    if os.environ.get("SKIP_DB_TESTS") == "1":
+        pytest.skip("SKIP_DB_TESTS=1")
     try:
         c = psycopg.connect(URL)  # not autocommit: everything below is one transaction
-    except psycopg.OperationalError:
-        pytest.skip("database not reachable")
+    except psycopg.OperationalError as err:
+        pytest.fail(f"database not reachable: start the stack or set SKIP_DB_TESTS=1 ({err})")
     c.execute("INSERT INTO sources (name, base_url) VALUES (%s, 'http://zz.example')", (SOURCE,))
     yield c
     c.rollback()

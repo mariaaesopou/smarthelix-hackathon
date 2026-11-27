@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import type { ProfilePage } from "@smarthelix/shared/generated";
+import type { ProfilePage, Recommendation } from "@smarthelix/shared/generated";
 import { buildApp } from "../src/app.ts";
 import data from "../src/repositories/fixtures/profiles.json" with { type: "json" };
 import { createFixtureProfileRepository } from "../src/repositories/fixtureProfiles.ts";
@@ -84,5 +84,43 @@ describe("profiles API on fixtures", () => {
     const bad = await app.inject("/profiles/not-a-uuid");
     assert.equal(bad.statusCode, 400);
     assertMatches("error.json", bad.json());
+  });
+
+  const recommendations = async (url: string) => {
+    const res = await app.inject(url);
+    assert.equal(res.statusCode, 200, res.body);
+    const items = res.json<Recommendation[]>();
+    for (const item of items) assertMatches("recommendation.json", item);
+    return items;
+  };
+
+  test("similar applies rule 21: survivor, no self, no duplicate, no unknown target", async () => {
+    // The hand-made list holds the profile itself, a merged id, the survivor again and
+    // an unknown id; only the survivor (at its best rank) and AgroSense remain.
+    const items = await recommendations(`/profiles/${BAKERY}/similar`);
+    assert.deepEqual(items.map((r) => [r.rank, r.profile.id, r.score]),
+      [[1, WEB_STUDIO, 0.42], [2, "b0000000-0000-4000-8000-000000000002", 0.12]]);
+    assert.ok(items.every((r) => r.matched_needs.length === 0));
+  });
+
+  test("partners explain which needs they cover", async () => {
+    const [first] = await recommendations(`/profiles/${BAKERY}/partners`);
+    assert.equal(first.profile.id, WEB_STUDIO);
+    assert.deepEqual(first.matched_needs, ["web development"]);
+  });
+
+  test("limit caps the list; no rows gives an empty list", async () => {
+    assert.equal((await recommendations(`/profiles/${BAKERY}/similar?limit=1`)).length, 1);
+    assert.deepEqual(await recommendations(`/profiles/${WEB_STUDIO}/partners`), []);
+    assert.equal((await app.inject(`/profiles/${BAKERY}/similar?limit=21`)).statusCode, 400);
+  });
+
+  test("recommendations of a merged id redirect; unknown ids are 404", async () => {
+    const res = await app.inject(`/profiles/${MERGED}/partners`);
+    assert.equal(res.statusCode, 307);
+    assert.equal(res.headers.location, `../${WEB_STUDIO}/partners`);
+    const missing = await app.inject("/profiles/00000000-0000-4000-8000-000000000000/similar");
+    assert.equal(missing.statusCode, 404);
+    assertMatches("error.json", missing.json());
   });
 });

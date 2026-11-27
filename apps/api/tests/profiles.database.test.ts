@@ -1,19 +1,29 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import type { ProfilePage } from "@smarthelix/shared/generated";
+import type { ProfilePage, Recommendation } from "@smarthelix/shared/generated";
 import pg from "pg";
 import { buildApp } from "../src/app.ts";
 import { createDbProfileRepository } from "../src/repositories/dbProfiles.ts";
 import { assertMatches } from "./helpers.ts";
 
-// The local compose database by default. Skipped when it is not reachable.
+// The local compose database by default. An unreachable database FAILS these tests,
+// so a stopped stack can never look like a pass; set SKIP_DB_TESTS=1 to skip on purpose.
 const URL = process.env.TEST_DATABASE_URL
   ?? "postgres://smarthelix:smarthelix_dev@127.0.0.1:5432/smarthelix?sslmode=disable";
+const skip = process.env.SKIP_DB_TESTS === "1" && "SKIP_DB_TESTS=1";
 
 const client = new pg.Client({ connectionString: URL });
-const reachable = await client.connect().then(() => true, () => false);
 
-describe("profiles API on the database", { skip: !reachable && "database not reachable" }, () => {
+describe("profiles API on the database", { skip }, () => {
+  before(async () => {
+    try {
+      await client.connect();
+    } catch (err) {
+      throw new Error(`database not reachable at ${URL.replace(/:[^:@/]*@/, ":***@")}: start the stack ` +
+        `(docker compose up) or set SKIP_DB_TESTS=1 to skip these tests. ${String(err)}`);
+    }
+  });
+
   let app: Awaited<ReturnType<typeof buildApp>>;
   const ids = {
     live: "f0000000-0000-4000-8000-000000000001",
@@ -108,5 +118,83 @@ describe("profiles API on the database", { skip: !reachable && "database not rea
     const deleted = await app.inject(`/profiles/${ids.deleted}`);
     assert.equal(deleted.statusCode, 404);
     assertMatches("error.json", deleted.json());
+  });
+
+  describe("recommendations from the current ML runs", () => {
+    // Targets: other (live), mergedIntoOther -> other, mergedIntoLive -> the subject itself.
+    const rec = {
+      other: "f0000000-0000-4000-8000-000000000011",
+      mergedIntoOther: "f0000000-0000-4000-8000-000000000012",
+      mergedIntoLive: "f0000000-0000-4000-8000-000000000013",
+      batch: "f0000000-0000-4000-8000-0000000000b1",
+      similarRun: "f0000000-0000-4000-8000-0000000000c1",
+      matchingRun: "f0000000-0000-4000-8000-0000000000c2",
+      record: "f0000000-0000-4000-8000-0000000000a2",
+    };
+
+    before(async () => {
+      await client.query(
+        `INSERT INTO profiles (id, type, name) VALUES
+           ($1, 'freelancer', 'Zzqtest Other'), ($2, 'freelancer', 'Zzqtest Old'),
+           ($3, 'freelancer', 'Zzqtest Older')`,
+        [rec.other, rec.mergedIntoOther, rec.mergedIntoLive]);
+      // A card needs at least one source (profile-card.json).
+      await client.query(
+        `INSERT INTO source_records (id, source, source_id, raw, hash, original_url)
+         VALUES ($1, 'source_a', 'zzqtest-2', '{}', 'h', 'https://example.org/a/zzqtest-2')`, [rec.record]);
+      await client.query("INSERT INTO profile_sources VALUES ($1, $2, 'new', 1)", [rec.record, rec.other]);
+      await client.query("UPDATE profiles SET merged_into = $1 WHERE id = $2", [rec.other, rec.mergedIntoOther]);
+      await client.query("UPDATE profiles SET merged_into = $1 WHERE id = $2", [ids.live, rec.mergedIntoLive]);
+      await client.query(
+        "INSERT INTO ml_batches (id, data_version, status) VALUES ($1, 0, 'succeeded')", [rec.batch]);
+      await client.query(
+        `INSERT INTO ml_runs (id, batch_id, kind, data_version, status) VALUES
+           ($1, $3, 'similarity', 0, 'succeeded'), ($2, $3, 'matching', 0, 'succeeded')`,
+        [rec.similarRun, rec.matchingRun, rec.batch]);
+      // Ranks: 1 merged into "other", 2 "other" again, 3 deleted, 4 merged into the subject.
+      await client.query(
+        `INSERT INTO similar_profiles (run_id, profile_id, similar_id, rank, score) VALUES
+           ($1, $2, $3, 1, 0.9), ($1, $2, $4, 2, 0.8), ($1, $2, $5, 3, 0.7), ($1, $2, $6, 4, 0.6)`,
+        [rec.similarRun, ids.live, rec.mergedIntoOther, rec.other, ids.deleted, rec.mergedIntoLive]);
+      await client.query(
+        `INSERT INTO potential_partners (run_id, profile_id, partner_id, rank, score, reasons) VALUES
+           ($1, $2, $3, 1, 1, '{"matched_needs": ["web development"]}')`,
+        [rec.matchingRun, ids.live, rec.other]);
+      await client.query(
+        `INSERT INTO ml_current (kind, run_id) VALUES ('similarity', $1), ('matching', $2)
+         ON CONFLICT (kind) DO UPDATE SET run_id = EXCLUDED.run_id`,
+        [rec.similarRun, rec.matchingRun]);
+    });
+
+    const list = async (url: string) => {
+      const res = await app.inject(url);
+      assert.equal(res.statusCode, 200, res.body);
+      const items = res.json<Recommendation[]>();
+      for (const item of items) assertMatches("recommendation.json", item);
+      return items;
+    };
+
+    test("similar follows rule 21 on the real SQL", async () => {
+      const items = await list(`/profiles/${ids.live}/similar`);
+      // Only "other" survives: at the best rank of its two rows, renumbered to 1.
+      assert.deepEqual(items.map((r) => [r.rank, r.profile.id, r.score]), [[1, rec.other, 0.9]]);
+      assert.deepEqual(items[0].matched_needs, []);
+    });
+
+    test("partners carry their matched needs", async () => {
+      const items = await list(`/profiles/${ids.live}/partners`);
+      assert.deepEqual(items.map((r) => [r.profile.id, r.matched_needs]), [[rec.other, ["web development"]]]);
+    });
+
+    test("a profile without rows gets an empty list", async () => {
+      assert.deepEqual(await list(`/profiles/${rec.other}/similar`), []);
+    });
+
+    test("307 for a merged subject, 404 for a deleted one", async () => {
+      const merged = await app.inject(`/profiles/${rec.mergedIntoLive}/similar`);
+      assert.equal(merged.statusCode, 307);
+      assert.equal(merged.headers.location, `../${ids.live}/similar`);
+      assert.equal((await app.inject(`/profiles/${ids.deleted}/partners`)).statusCode, 404);
+    });
   });
 });

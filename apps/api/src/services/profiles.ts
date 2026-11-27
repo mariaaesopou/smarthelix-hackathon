@@ -1,8 +1,13 @@
 import type { ProfilePage } from "@smarthelix/shared/generated";
-import type { ProfileLookup, ProfileRepository, ProfileType } from "../repositories/profiles.ts";
+import type {
+  ProfileLookup, ProfileRepository, ProfileType, RecommendationKind, RecommendationLookup,
+} from "../repositories/profiles.ts";
 
 export const DEFAULT_PER_PAGE = 20;
 export const MAX_PER_PAGE = 100;
+/** The ML jobs store 20 per profile; the API shows 10 unless asked for more (rule 21). */
+export const DEFAULT_RECOMMENDATIONS = 10;
+export const MAX_RECOMMENDATIONS = 20;
 /** Capped OFFSET pagination (architecture rule 23): narrow the search instead of paging deeper. */
 export const MAX_OFFSET = 1000;
 
@@ -25,6 +30,7 @@ export class BadRequestError extends Error {
 export interface ProfileService {
   search(query: ProfileQuery): Promise<ProfilePage>;
   findById(id: string): Promise<ProfileLookup>;
+  recommendations(id: string, kind: RecommendationKind, limit: number): Promise<RecommendationLookup>;
 }
 
 export function createProfileService(repository: ProfileRepository): ProfileService {
@@ -47,5 +53,8 @@ export function createProfileService(repository: ProfileRepository): ProfileServ
     },
 
     findById: (id) => repository.findById(id),
+
+    // The route caps limit at MAX_RECOMMENDATIONS, which is all the ML jobs store.
+    recommendations: (id, kind, limit) => repository.recommendations(id, kind, limit),
   };
 }

@@ -1,4 +1,4 @@
-import type { Profile, ProfileCard } from "@smarthelix/shared/generated";
+import type { Profile, ProfileCard, Recommendation } from "@smarthelix/shared/generated";
 
 export type ProfileType = Profile["type"];
 
@@ -29,8 +29,23 @@ export type ProfileLookup =
   | { kind: "merged"; survivorId: string }
   | { kind: "missing" };
 
+/** similar: the similar_profiles table; partners: potential_partners. */
+export type RecommendationKind = "similar" | "partners";
+
+/**
+ * Result of asking for a profile's recommendations. Items follow rule 21: a merged
+ * target is replaced by its survivor, deleted targets and the profile itself are
+ * dropped, each target appears once at its best rank, and ranks restart at 1.
+ * No current ML run, or no rows, gives an empty list.
+ */
+export type RecommendationLookup =
+  | { kind: "found"; items: Recommendation[] }
+  | { kind: "merged"; survivorId: string }
+  | { kind: "missing" };
+
 /** Where profiles come from. Fixtures and the database both implement it. */
 export interface ProfileRepository {
   search(filters: SearchFilters): Promise<SearchResult>;
   findById(id: string): Promise<ProfileLookup>;
+  recommendations(id: string, kind: RecommendationKind, limit: number): Promise<RecommendationLookup>;
 }

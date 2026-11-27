@@ -88,7 +88,9 @@ pnpm etl:a --mode full   # import source A through its connector
 Connectors and how a run works: [services/pipeline/README.md](services/pipeline/README.md).
 
 `db:seed` loads `db/seeds/001_dev.sql` (4 hand-written profiles with ML results)
-and `db/seeds/002_profiles.sql` (2,000 generated profiles). Both are safe to run
+and `db/seeds/002_profiles.sql` (2,000 generated profiles), then
+`db/seeds/003_dev_partners.sql` (hand-made partners until the Spark matchmaking
+job exists). All are safe to run
 again. To regenerate the 2,000 profiles and the mock-source data:
 
 ```bash
