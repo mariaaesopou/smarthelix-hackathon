@@ -64,13 +64,18 @@ services:
       redis: { condition: service_healthy }
 
   worker:
-    build: { context: ., args: { APP_DIR: apps/worker } }
+    build: { context: ., dockerfile: Dockerfile.worker }
     restart: unless-stopped
     environment:
       DATABASE_URL: *db-url
       REDIS_URL: redis://redis:6379
       MOCK_SOURCES_URL: http://mock-sources:4000
       ERASURE_HMAC_SECRET: ${ERASURE_HMAC_SECRET:-}
+      # Read by the Spark jobs the worker spawns (services/ml db.py).
+      ML_DATABASE_URL: *db-url
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-2g}
+    # Cap the container above the Spark heap (JVM overhead + Python workers).
+    mem_limit: ${WORKER_MEM_LIMIT:-4g}
     # Snapshots, models and benchmark data; data/ is git-ignored.
     volumes: ["./data:/repo/data"]
     depends_on:
