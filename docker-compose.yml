@@ -116,5 +116,31 @@ services:
         --output-model-type pydantic_v2.BaseModel
         --target-python-version 3.11 --disable-timestamp
 
+  # Pipeline commands without a local Python: pnpm etl:a, pnpm test:pipeline.
+  # Not started by `docker compose up`. Installs only what the connectors need;
+  # PySpark joins the worker image on Day 5.
+  pipeline:
+    profiles: [tools]
+    image: python:3.11-slim-bookworm
+    working_dir: /repo/services/pipeline
+    volumes: [".:/repo", "pipcache:/root/.cache/pip"]
+    environment:
+      DATABASE_URL: *db-url
+      MOCK_SOURCES_URL: http://mock-sources:4000
+      ERASURE_HMAC_SECRET: ${ERASURE_HMAC_SECRET:-}
+      PYTHONPATH: /repo/services/pipeline/src
+      PYTHONDONTWRITEBYTECODE: "1"
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        pip install -q --root-user-action=ignore --disable-pip-version-check
+        "pydantic>=2.10,<3" "psycopg[binary]>=3.2,<4" "pytest>=8" && exec "$$@"
+      - pipeline
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      mock-sources: { condition: service_healthy }
+
 volumes:
   pgdata:
+  pipcache:
