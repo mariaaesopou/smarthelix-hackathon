@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "Role 2 ML functions: preprocessing, similarity, matchmaking, clustering, LSH benchmark"
 requires-python = ">=3.11,<3.12"
 # pyspark[ml] brings numpy; PySpark 3.5 predates numpy 2 (it calls np.in1d and np.string_, both removed there).
-dependencies = ["pyspark[ml]==3.5.1", "numpy>=1.22,<2"]
+# pyspark.ml.functions (vector_to_array) imports pandas; pandas 3 needs numpy 2, hence < 3.
+dependencies = ["pyspark[ml]==3.5.1", "numpy>=1.22,<2", "pandas>=1.5,<3"]
 
 [dependency-groups]
 dev = ["pytest>=8"]

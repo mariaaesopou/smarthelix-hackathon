@@ -1,12 +1,16 @@
-"""Smoke check: load the profiles from the local database, preprocess them and build TF-IDF features.
+"""Smoke check: load the profiles from the local database, preprocess, build TF-IDF features,
+compute similar profiles and print 5 profiles from 5 sectors for a hand check.
 
     python -m smarthelix_ml            (from services/ml/src, stack running, seeds loaded)
 """
 
-from pyspark.sql import functions as F
+import time
+
+from pyspark.sql import Window, functions as F
 
 from .db import load_profiles_jdbc
 from .features import DEFAULT_MIN_DF, build_features, idf_weights, vocabulary
+from .similarity import DEFAULT_K, top_k_similar
 from .preprocess import preprocess
 from .session import get_spark
 
@@ -40,6 +44,25 @@ def main() -> None:
     v = vecs[0].features
     top = sorted(zip(v.values, v.indices), reverse=True)[:6]
     print(f"top weighted words of {vecs[0].name!r}:", [(vocab[i], round(x, 2)) for x, i in top])
+
+    # Similar profiles, plus the plan's hand check: 5 profiles from 5 different sectors.
+    start = time.perf_counter()
+    similar = top_k_similar(feats).cache()
+    rows, per = similar.count(), similar.groupBy("profile_id").count()
+    print(f"similar_profiles: {rows} rows in {time.perf_counter() - start:.1f}s, "
+          f"profiles with a list: {per.count()}, with fewer than {DEFAULT_K}: "
+          f"{per.where(F.col('count') < DEFAULT_K).count()}")
+    info = df.select("id", "name", "type", "sector", "region")
+    first_per_sector = Window.partitionBy("sector").orderBy("id")
+    sample = (info.where(F.col("sector").isNotNull())
+              .withColumn("n", F.row_number().over(first_per_sector)).where("n = 1")
+              .orderBy("sector").limit(5).collect())
+    for p in sample:
+        print(f"\n{p.name} ({p.type}, {p.sector}, {p.region}) -> top 5:")
+        (similar.where(F.col("profile_id") == p.id).where("rank <= 5")
+         .join(info.withColumnRenamed("id", "similar_id"), "similar_id")
+         .orderBy("rank").select("rank", F.round("score", 3).alias("score"), "name", "type", "sector", "region")
+         .show(truncate=False))
     spark.stop()
 
 

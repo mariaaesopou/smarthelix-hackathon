@@ -8,7 +8,7 @@ loads `profiles`, calls them and writes the ML tables.
 | `to_profile_frame(df)` | done | the contract columns of `profiles`, NULLs -> empty |
 | `preprocess(df)` | done | adds `tokens` |
 | `build_features(df)` | done | adds `features` (L2-normalised TF-IDF) and returns the fitted model |
-| `compute_similar(df)` | day 4-5 | `similar_profiles`: `profile_id, similar_id, rank, score` (top 20 stored, API shows 10) |
+| `compute_similar(df)` | done | `similar_profiles`: `profile_id, similar_id, rank, score` (top 20 stored, API shows 10) |
 | `compute_partners(df)` | day 5-6 | `potential_partners`: `profile_id, partner_id, rank, score, reasons` |
 | `compute_clusters(df)` | day 6-7 | `cluster_assignments`: `profile_id, cluster_id, label` |
 
@@ -32,6 +32,19 @@ length 1, so the dot product of two vectors is their cosine similarity.
   in 6 or more (376 words kept). A word in every profile gets IDF 0.
 - A vocabulary that comes out empty (too few profiles) raises a clear `ValueError`.
 
+## Similar profiles
+
+`compute_similar(profiles, k=20)` runs preprocess -> features -> top k. Cosine is the dot
+product of the unit vectors, computed as a sparse join on shared words (exact, built-in
+Spark only; pairs with no shared word are never generated). Ties are broken by
+`similar_id`. The plan's top 10 is what the API shows; 20 are stored so the API can drop
+merged or deleted profiles (docs/architecture.md, items 15 and 21).
+
+Hand check on the 2k seed (`python -m smarthelix_ml`): 5 profiles from 5 sectors all get
+neighbours from their own field; about 4 s for all 2,004 profiles. Known limit: TF-IDF
+matches identical words only, so Greek-only and English-only profiles almost never match
+each other; bilingual profiles are the bridge (multilingual embeddings are CUT-2).
+
 ## Run
 
 Python 3.11 and Java 17. From the repo root, with the stack up and seeds loaded:
@@ -45,6 +58,6 @@ cd src && python -m smarthelix_ml     # load profiles over JDBC, print token and
 
 Database: `ML_DATABASE_URL` (postgres://...), default is the local compose database.
 On Windows, Git Bash rewrites `/seeds/...`: prefix `pnpm db:seed` with `MSYS_NO_PATHCONV=1`.
-PySpark 3.5 needs numpy < 2 (pinned in pyproject.toml); in a shared venv that also means pandas < 3.
+PySpark 3.5 needs numpy < 2, and `vector_to_array` imports pandas, which must then be < 3 (both pinned in pyproject.toml).
 Windows without `winutils.exe`: reading and computing work (the JDBC jar goes on the
 driver classpath); writing Parquet for the benchmark will need winutils or Docker.
