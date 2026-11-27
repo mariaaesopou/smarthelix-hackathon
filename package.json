@@ -11,7 +11,7 @@
     "db:migrate": "docker compose run --rm migrate",
     "db:seed": "docker compose exec -T postgres bash /dbtests/run.sh /seeds/001_dev.sql && docker compose exec -T postgres bash /dbtests/run.sh /seeds/002_profiles.sql",
     "db:test": "docker compose exec -T postgres bash /dbtests/run.sh /dbtests/schema.sql",
-    "etl:a": "docker compose --profile tools run --rm pipeline python -m pipeline.etl --source source_a",
+    "etl:a": "docker compose --profile tools run --rm pipeline python -m pipeline etl --source source_a",
     "test:pipeline": "docker compose --profile tools run --rm pipeline python -m pytest -p no:cacheprovider"
   }
 }

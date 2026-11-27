@@ -65,6 +65,7 @@ services:
 
   worker:
     build: { context: ., dockerfile: Dockerfile.worker }
+    image: smarthelix-worker
     restart: unless-stopped
     environment:
       DATABASE_URL: *db-url
@@ -122,30 +123,27 @@ services:
         --target-python-version 3.11 --disable-timestamp
 
   # Pipeline commands without a local Python: pnpm etl:a, pnpm test:pipeline.
-  # Not started by `docker compose up`. Installs only what the connectors need;
-  # PySpark joins the worker image on Day 5.
+  # Not started by `docker compose up`. Same image as the worker (Python, Java,
+  # Spark); the Python code is mounted, so edits need no rebuild.
   pipeline:
     profiles: [tools]
-    image: python:3.11-slim-bookworm
+    build: { context: ., dockerfile: Dockerfile.worker }
+    image: smarthelix-worker
     working_dir: /repo/services/pipeline
-    volumes: [".:/repo", "pipcache:/root/.cache/pip"]
+    volumes:
+      - ./services:/repo/services
+      - ./packages/shared:/repo/packages/shared
     environment:
       DATABASE_URL: *db-url
+      ML_DATABASE_URL: *db-url
       MOCK_SOURCES_URL: http://mock-sources:4000
       ERASURE_HMAC_SECRET: ${ERASURE_HMAC_SECRET:-}
-      PYTHONPATH: /repo/services/pipeline/src
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-2g}
       PYTHONDONTWRITEBYTECODE: "1"
-    entrypoint:
-      - sh
-      - -c
-      - >-
-        pip install -q --root-user-action=ignore --disable-pip-version-check
-        "pydantic>=2.10,<3" "psycopg[binary]>=3.2,<4" "pytest>=8" && exec "$$@"
-      - pipeline
+    mem_limit: ${WORKER_MEM_LIMIT:-4g}
     depends_on:
       migrate: { condition: service_completed_successfully }
       mock-sources: { condition: service_healthy }
 
 volumes:
   pgdata:
-  pipcache:

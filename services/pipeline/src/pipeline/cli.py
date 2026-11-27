@@ -12,11 +12,12 @@ import traceback
 from collections.abc import Callable, Sequence
 
 from .errors import EXIT_OK, EXIT_PERMANENT, EXIT_RETRYABLE, PermanentError, RetryableError
-from .jobs import selftest
+from .jobs import etl, selftest
 from .spark_jobs import similarity
 
 # Job name -> function that configures its subparser and a function that runs it.
 JOBS: dict[str, tuple[Callable[[argparse.ArgumentParser], None], Callable[[argparse.Namespace], None]]] = {
+    "etl": (etl.add_arguments, etl.run),
     "selftest": (selftest.add_arguments, selftest.run),
     "similarity": (similarity.add_arguments, similarity.run),
 }

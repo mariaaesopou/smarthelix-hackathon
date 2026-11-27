@@ -1,6 +1,7 @@
 # services/pipeline
 
-Python: connectors, ETL, resolution, and later the Spark job runner.
+Python: connectors, ETL, resolution and the Spark job runner. Every job runs as
+`python -m pipeline <job>` (`cli.py`); the worker starts jobs the same way.
 
 ## Run
 
@@ -14,7 +15,9 @@ pnpm test:pipeline               # unit tests and database tests
 
 Output: the run id and counts (`fetched`, `inserted`, `updated`, `unchanged`,
 `invalid`, `blocked`, `profiles_created`, `profiles_updated`). Exit codes: 0
-success, 75 retry later (source down, another run active), 65 permanent failure.
+success, 75 retry later (source down, another run active), 65 permanent failure
+(`errors.py`). Inside the worker image the same run is
+`python -m pipeline etl --source source_a --mode full`.
 
 ## How one run works (ETL)
 
@@ -38,7 +41,7 @@ Every run is a `sync_runs` row: `etl_running` → `etl_done` → `resolved`, or
 
 Write `connectors/source_x.py` with a `pages(since)` that yields `Page`s and a
 `map(raw)` that returns a `NormalizedRecord`, using the helpers in
-`etl/clean.py`, then register it in `etl/__main__.py`. Loading, resolution and
+`etl/clean.py`, then register it in `jobs/etl.py`. Loading, resolution and
 `sync_runs` need no change.
 
 ## Tests
