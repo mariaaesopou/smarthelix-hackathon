@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile-page.json",
+  "title": "ProfilePage",
+  "description": "Response of GET /profiles: one page of search results.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "items",
+    "page",
+    "per_page",
+    "total"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "profile-card.json"
+      }
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "per_page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "total": {
+      "description": "Number of matching profiles on all pages.",
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

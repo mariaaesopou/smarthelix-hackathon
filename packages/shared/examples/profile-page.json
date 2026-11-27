@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "id": "b0000000-0000-4000-8000-000000000003",
+      "type": "freelancer",
+      "name": "Demo Web Studio",
+      "description": "Σχεδιασμός ιστοσελίδων",
+      "sector": "software",
+      "region": "Attica",
+      "skills": [
+        "web development",
+        "React"
+      ],
+      "sources": [
+        "source_b"
+      ]
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000004",
+      "type": "freelancer",
+      "name": "Demo UX Designer",
+      "description": "User research and interface design",
+      "sector": "software",
+      "region": null,
+      "skills": [
+        "UX design"
+      ],
+      "sources": [
+        "source_b"
+      ]
+    }
+  ],
+  "page": 1,
+  "per_page": 20,
+  "total": 2
+}

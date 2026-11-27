@@ -1,0 +1,29 @@
+{
+  "id": "a-seed-1434",
+  "company_name": "Zagori Guesthouse",
+  "category": "SME",
+  "summary": "Εμπειρία σε guided tours και foreign languages. Οι υπηρεσίες μας: εμπειρίες κρασιού, sightseeing tours. Ευέλικτη συνεργασία με νέες ομάδες.",
+  "industry": "tourism",
+  "location": "Central Macedonia",
+  "capabilities": [
+    "guided tours",
+    "foreign languages",
+    "event planning"
+  ],
+  "products": [
+    "εμπειρίες κρασιού",
+    "sightseeing tours",
+    "guest transfers"
+  ],
+  "looking_for": [
+    "content writing",
+    "event photography"
+  ],
+  "languages": [
+    "el",
+    "en"
+  ],
+  "website": "https://www.zagoriguesthouse1434.gr",
+  "profile_url": "https://example.org/source_a/a-seed-1434",
+  "last_modified": "2026-05-28T14:53:00Z"
+}

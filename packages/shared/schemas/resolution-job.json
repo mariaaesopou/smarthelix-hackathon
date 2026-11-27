@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "resolution-job.json",
   "title": "ResolutionJob",
   "type": "object",
   "additionalProperties": false,
