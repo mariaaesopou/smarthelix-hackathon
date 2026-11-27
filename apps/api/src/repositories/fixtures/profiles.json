@@ -1,0 +1,79 @@
+{
+  "profiles": [
+    {
+      "id": "b0000000-0000-4000-8000-000000000001",
+      "type": "sme",
+      "name": "Αρτοποιείο Παράδειγμα",
+      "description": "Παραδοσιακό ψωμί και γλυκά",
+      "sector": "food",
+      "region": "Attica",
+      "skills": ["baking"],
+      "services": ["φρέσκο ψωμί"],
+      "needs": ["web development"],
+      "languages": ["el"],
+      "website": null,
+      "updated_at": "2026-11-25T10:00:00Z",
+      "sources": [
+        { "name": "source_a", "url": "http://localhost:4000/a", "original_url": "https://example.org/a/1" }
+      ],
+      "cluster": { "id": 1, "label": "food" }
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000002",
+      "type": "young_entrepreneur",
+      "name": "AgroSense Demo",
+      "description": "Αισθητήρες για έξυπνη γεωργία",
+      "sector": "agritech",
+      "region": "Thessaly",
+      "skills": ["IoT", "backend"],
+      "services": ["field monitoring"],
+      "needs": ["UX design"],
+      "languages": ["el", "en"],
+      "website": null,
+      "updated_at": "2026-11-25T10:00:00Z",
+      "sources": [
+        { "name": "source_a", "url": "http://localhost:4000/a", "original_url": "https://example.org/a/2" }
+      ],
+      "cluster": { "id": 2, "label": "agritech" }
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000003",
+      "type": "freelancer",
+      "name": "Demo Web Studio",
+      "description": "Σχεδιασμός ιστοσελίδων",
+      "sector": "software",
+      "region": "Attica",
+      "skills": ["web development", "React"],
+      "services": ["websites"],
+      "needs": [],
+      "languages": ["el", "en"],
+      "website": "https://demo-web-studio.example",
+      "updated_at": "2026-11-25T10:00:00Z",
+      "sources": [
+        { "name": "source_b", "url": "http://localhost:4000/b", "original_url": "https://example.org/b/1" }
+      ],
+      "cluster": { "id": 0, "label": "software" }
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000004",
+      "type": "freelancer",
+      "name": "Demo UX Designer",
+      "description": "User research and interface design",
+      "sector": "software",
+      "region": "Crete",
+      "skills": ["UX design"],
+      "services": ["prototypes"],
+      "needs": ["web development"],
+      "languages": ["en"],
+      "website": null,
+      "updated_at": "2026-11-25T10:00:00Z",
+      "sources": [
+        { "name": "source_b", "url": "http://localhost:4000/b", "original_url": "https://example.org/b/2" }
+      ],
+      "cluster": null
+    }
+  ],
+  "merged": {
+    "b0000000-0000-4000-8000-0000000000ff": "b0000000-0000-4000-8000-000000000003"
+  }
+}
