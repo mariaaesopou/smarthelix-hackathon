@@ -5,7 +5,8 @@
 -- Score = share of A's needs that B covers; ties go to the profile with more
 -- offers. Terms are compared case-insensitively and without accents (f_norm).
 -- The rows live under their own ML run and become the current "matching" run, so
--- the first real Spark run replaces them (architecture rule 17).
+-- the first real Spark run replaces them (architecture rule 17); after that,
+-- re-running this seed leaves the real run current.
 BEGIN;
 
 INSERT INTO ml_batches (id, data_version, status, finished_at)
@@ -49,7 +50,11 @@ SELECT 'd0000000-0000-4000-8000-0000000000aa', profile_id, partner_id, rank,
 FROM ranked
 WHERE rank <= 20;
 
+-- Take the pointer only from another seed run (001_dev.sql's or this one), never
+-- from a real Spark run, so re-running the seed cannot hide real results.
 INSERT INTO ml_current (kind, run_id) VALUES ('matching', 'd0000000-0000-4000-8000-0000000000aa')
-ON CONFLICT (kind) DO UPDATE SET run_id = EXCLUDED.run_id;
+ON CONFLICT (kind) DO UPDATE SET run_id = EXCLUDED.run_id
+WHERE ml_current.run_id IN ('d0000000-0000-4000-8000-000000000002',
+                            'd0000000-0000-4000-8000-0000000000aa');
 
 COMMIT;

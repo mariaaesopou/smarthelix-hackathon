@@ -6,14 +6,24 @@ import { buildApp } from "../src/app.ts";
 import { createDbProfileRepository } from "../src/repositories/dbProfiles.ts";
 import { assertMatches } from "./helpers.ts";
 
-// The local compose database by default. Skipped when it is not reachable.
+// The local compose database by default. An unreachable database FAILS these tests,
+// so a stopped stack can never look like a pass; set SKIP_DB_TESTS=1 to skip on purpose.
 const URL = process.env.TEST_DATABASE_URL
   ?? "postgres://smarthelix:smarthelix_dev@127.0.0.1:5432/smarthelix?sslmode=disable";
+const skip = process.env.SKIP_DB_TESTS === "1" && "SKIP_DB_TESTS=1";
 
 const client = new pg.Client({ connectionString: URL });
-const reachable = await client.connect().then(() => true, () => false);
 
-describe("profiles API on the database", { skip: !reachable && "database not reachable" }, () => {
+describe("profiles API on the database", { skip }, () => {
+  before(async () => {
+    try {
+      await client.connect();
+    } catch (err) {
+      throw new Error(`database not reachable at ${URL.replace(/:[^:@/]*@/, ":***@")}: start the stack ` +
+        `(docker compose up) or set SKIP_DB_TESTS=1 to skip these tests. ${String(err)}`);
+    }
+  });
+
   let app: Awaited<ReturnType<typeof buildApp>>;
   const ids = {
     live: "f0000000-0000-4000-8000-000000000001",

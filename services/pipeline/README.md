@@ -48,5 +48,5 @@ Write `connectors/source_x.py` with a `pages(since)` that yields `Page`s and a
 
 `tests/test_source_a.py` checks mapping and cleaning, including every record of
 the source A mock. `tests/test_etl_db.py` runs the ETL against the database
-inside a transaction that is rolled back; it is skipped when the database is
-not reachable.
+inside a transaction that is rolled back. When the database is not reachable it
+fails rather than skips; `SKIP_DB_TESTS=1` skips it on purpose.

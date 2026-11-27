@@ -46,7 +46,10 @@ never computes them, and a half-written run is never visible.
 
 - **200:** a list of `{ profile: ProfileCard, rank, score, matched_needs }`, best
   first. `matched_needs` lists the needs of the requested profile that a partner
-  offers; it is empty for similar profiles. No current run, or no rows, gives `[]`.
+  offers; it is empty for similar profiles. No current run, or no rows, gives `[]`;
+  the two cases are not told apart yet.
+- `score` is the job's value at full precision (cosine similarity for similar
+  profiles, 0–1 for partners); round it where it is displayed.
 - `limit`: 1–20, default 10 (the jobs store 20 per profile).
 - A target that was merged is replaced by its survivor; deleted targets and the
   profile itself are dropped; each profile appears once, at its best rank, and
@@ -79,5 +82,6 @@ search uses PostgreSQL functions that an ORM would not express.
 pnpm --filter @smarthelix/api test
 ```
 
-The database tests use the local compose database and roll back everything they
-write; they are skipped when it is not running (`TEST_DATABASE_URL` overrides it).
+The database tests use the local compose database (`TEST_DATABASE_URL` overrides
+it) and roll back everything they write. When it is not reachable they fail, so a
+stopped stack never looks like a pass; `SKIP_DB_TESTS=1` skips them on purpose.
