@@ -1,11 +1,23 @@
-import type { Profile, ProfileCard } from "@smarthelix/shared/generated";
+import type { Profile, ProfileCard, Recommendation } from "@smarthelix/shared/generated";
 import data from "./fixtures/profiles.json" with { type: "json" };
-import type { ProfileLookup, ProfileRepository, SearchFilters, SearchResult } from "./profiles.ts";
+import type {
+  ProfileLookup, ProfileRepository, RecommendationKind, RecommendationLookup, SearchFilters, SearchResult,
+} from "./profiles.ts";
+
+/** One hand-made ML row, in rank order: the target and its score. */
+interface FixtureRow {
+  id: string;
+  score: number;
+  matched_needs?: string[];
+}
 
 interface FixtureFile {
   profiles: Profile[];
   /** Merged profile id -> the profile it was merged into. */
   merged: Record<string, string>;
+  /** Hand-made rows of similar_profiles and potential_partners, by subject id. */
+  similar: Record<string, FixtureRow[]>;
+  partners: Record<string, FixtureRow[]>;
 }
 
 /** Lower case, no Greek accents, final sigma as sigma: like f_norm in the database. */
@@ -58,6 +70,29 @@ export function createFixtureProfileRepository(
       if (survivorId) return { kind: "merged", survivorId };
       const profile = byId.get(id);
       return profile ? { kind: "found", profile } : { kind: "missing" };
+    },
+
+    async recommendations(id: string, kind: RecommendationKind, limit: number): Promise<RecommendationLookup> {
+      const survivorId = file.merged[id];
+      if (survivorId) return { kind: "merged", survivorId };
+      if (!byId.has(id)) return { kind: "missing" };
+
+      // Rule 21, the same steps as the SQL: survivor for merged targets, drop
+      // unknown targets and the profile itself, keep each target's best rank.
+      const seen = new Set<string>();
+      const items: Recommendation[] = [];
+      for (const row of file[kind][id] ?? []) {
+        const target = byId.get(file.merged[row.id] ?? row.id);
+        if (!target || target.id === id || seen.has(target.id)) continue;
+        seen.add(target.id);
+        items.push({
+          profile: toCard(target),
+          rank: items.length + 1,
+          score: row.score,
+          matched_needs: row.matched_needs ?? [],
+        });
+      }
+      return { kind: "found", items: items.slice(0, limit) };
     },
   };
 }
