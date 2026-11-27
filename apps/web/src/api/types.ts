@@ -1,12 +1,12 @@
-import type {Profile} from "../../../../packages/shared/generated";
+import type {Profile} from "@smarthelix/shared/generated";
 
 // The shapes the team agreed on, generated from packages/shared/schemas.
 export type {
-    ClusterAssignment,
-    PotentialPartner,
     Profile,
-    SimilarProfile,
-} from "../../../../packages/shared/generated";
+    ProfileCard,
+    ProfilePage,
+    Recommendation,
+} from "@smarthelix/shared/generated";
 
 export type ProfileType = Profile["type"];
 
@@ -22,14 +22,8 @@ export interface SearchParams {
     type?: ProfileType;
     sector?: string;
     region?: string;
-    limit?: number; // at most 50
-    offset?: number; // at most 1000
-}
-
-// One page of results plus the total number of matches.
-export interface Page<T> {
-    items: T[];
-    total: number;
+    page?: number; // starts at 1
+    per_page?: number; // 1 to 100
 }
 
 // Thrown when a profile does not exist, so pages can show "not found".

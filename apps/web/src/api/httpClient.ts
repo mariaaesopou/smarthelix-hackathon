@@ -1,5 +1,5 @@
 import type {ApiClient} from "./client";
-import {NotFoundError, type Page, type Profile, type SearchParams} from "./types";
+import {NotFoundError, type Profile, type ProfilePage, type SearchParams} from "./types";
 
 // vite.config.ts forwards /api/* to the API container (http://api:3000).
 const BASE_URL = "/api";
@@ -11,7 +11,7 @@ async function getJson<T>(path: string): Promise<T> {
     return (await res.json()) as T;
 }
 
-// { q: "design", type: undefined, limit: 20 } becomes "?q=design&limit=20".
+// { q: "design", type: undefined, page: 2 } becomes "?q=design&page=2".
 function toQueryString(params: SearchParams): string {
     const qs = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
@@ -22,6 +22,6 @@ function toQueryString(params: SearchParams): string {
 }
 
 export const httpClient: ApiClient = {
-    searchProfiles: (params) => getJson<Page<Profile>>(`/profiles${toQueryString(params)}`),
+    searchProfiles: (params) => getJson<ProfilePage>(`/profiles${toQueryString(params)}`),
     getProfile: (id) => getJson<Profile>(`/profiles/${encodeURIComponent(id)}`),
 };

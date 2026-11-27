@@ -23,10 +23,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-1"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000002",
@@ -57,10 +58,11 @@
     "sources": [
       {
         "name": "source_b",
-        "url": "http://mock-sources:4000/b",
+        "url": "http://localhost:4000/b",
         "original_url": "https://example.org/source_b/b-mock-2"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000003",
@@ -90,10 +92,11 @@
     "sources": [
       {
         "name": "source_b",
-        "url": "http://mock-sources:4000/b",
+        "url": "http://localhost:4000/b",
         "original_url": "https://example.org/source_b/b-mock-3"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000004",
@@ -122,10 +125,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-4"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000005",
@@ -156,10 +160,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-5"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000006",
@@ -190,10 +195,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-6"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000007",
@@ -223,10 +229,11 @@
     "sources": [
       {
         "name": "source_b",
-        "url": "http://mock-sources:4000/b",
+        "url": "http://localhost:4000/b",
         "original_url": "https://example.org/source_b/b-mock-7"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000008",
@@ -256,10 +263,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-8"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000009",
@@ -288,10 +296,11 @@
     "sources": [
       {
         "name": "source_b",
-        "url": "http://mock-sources:4000/b",
+        "url": "http://localhost:4000/b",
         "original_url": "https://example.org/source_b/b-mock-9"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000010",
@@ -322,10 +331,11 @@
     "sources": [
       {
         "name": "source_b",
-        "url": "http://mock-sources:4000/b",
+        "url": "http://localhost:4000/b",
         "original_url": "https://example.org/source_b/b-mock-10"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000011",
@@ -356,10 +366,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-11"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000012",
@@ -389,10 +400,11 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-12"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000013",
@@ -421,10 +433,11 @@
     "sources": [
       {
         "name": "source_b",
-        "url": "http://mock-sources:4000/b",
+        "url": "http://localhost:4000/b",
         "original_url": "https://example.org/source_b/b-mock-13"
       }
-    ]
+    ],
+    "cluster": null
   },
   {
     "id": "b0000000-0000-4000-8000-000000000014",
@@ -454,9 +467,10 @@
     "sources": [
       {
         "name": "source_a",
-        "url": "http://mock-sources:4000/a",
+        "url": "http://localhost:4000/a",
         "original_url": "https://example.org/source_a/a-mock-14"
       }
-    ]
+    ],
+    "cluster": null
   }
 ]

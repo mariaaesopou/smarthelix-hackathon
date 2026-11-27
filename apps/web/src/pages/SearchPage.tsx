@@ -1,12 +1,12 @@
 import {useEffect, useState, type FormEvent} from "react";
 import {Link, useSearchParams} from "react-router";
-import {api, TYPE_LABELS, type Page, type Profile} from "../api";
+import {api, TYPE_LABELS, type ProfilePage} from "../api";
 
 export default function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const q = searchParams.get("q") ?? "";
 
-    const [result, setResult] = useState<Page<Profile> | null>(null);
+    const [result, setResult] = useState<ProfilePage | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
