@@ -82,7 +82,10 @@ API, worker and pipeline tests: TBD.
 
 ```bash
 pnpm db:seed      # synthetic data; needs the stack running
+pnpm etl:a --mode full   # import source A through its connector
 ```
+
+Connectors and how a run works: [services/pipeline/README.md](services/pipeline/README.md).
 
 `db:seed` loads `db/seeds/001_dev.sql` (4 hand-written profiles with ML results)
 and `db/seeds/002_profiles.sql` (2,000 generated profiles). Both are safe to run

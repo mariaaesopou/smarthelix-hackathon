@@ -65,6 +65,7 @@ services:
 
   worker:
     build: { context: ., dockerfile: Dockerfile.worker }
+    image: smarthelix-worker
     restart: unless-stopped
     environment:
       DATABASE_URL: *db-url
@@ -120,6 +121,29 @@ services:
         --output services/pipeline/src/pipeline/generated
         --output-model-type pydantic_v2.BaseModel
         --target-python-version 3.11 --disable-timestamp
+
+  # Pipeline commands without a local Python: pnpm etl:a, pnpm test:pipeline.
+  # Not started by `docker compose up`. Same image as the worker (Python, Java,
+  # Spark); the Python code is mounted, so edits need no rebuild.
+  pipeline:
+    profiles: [tools]
+    build: { context: ., dockerfile: Dockerfile.worker }
+    image: smarthelix-worker
+    working_dir: /repo/services/pipeline
+    volumes:
+      - ./services:/repo/services
+      - ./packages/shared:/repo/packages/shared
+    environment:
+      DATABASE_URL: *db-url
+      ML_DATABASE_URL: *db-url
+      MOCK_SOURCES_URL: http://mock-sources:4000
+      ERASURE_HMAC_SECRET: ${ERASURE_HMAC_SECRET:-}
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-2g}
+      PYTHONDONTWRITEBYTECODE: "1"
+    mem_limit: ${WORKER_MEM_LIMIT:-4g}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      mock-sources: { condition: service_healthy }
 
 volumes:
   pgdata:
