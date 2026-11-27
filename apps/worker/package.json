@@ -2,7 +2,7 @@
   "name": "@smarthelix/worker",
   "private": true,
   "type": "module",
-  "scripts": { "start": "tsx src/main.ts", "typecheck": "tsc" },
+  "scripts": { "start": "tsx src/main.ts", "typecheck": "tsc", "test": "tsx --test src/**/*.test.ts" },
   "dependencies": { "bullmq": "6.7.10", "ioredis": "6.0.0", "tsx": "4.23.15" },
   "devDependencies": { "@types/node": "^22.0.0", "typescript": "5.9.3" }
 }
