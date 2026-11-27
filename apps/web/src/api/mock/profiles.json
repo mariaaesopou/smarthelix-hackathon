@@ -1,0 +1,476 @@
+[
+  {
+    "id": "b0000000-0000-4000-8000-000000000001",
+    "type": "sme",
+    "name": "Αρτοποιείο Παράδειγμα",
+    "description": "Παραδοσιακό ψωμί και γλυκά",
+    "sector": "food",
+    "region": "Attica",
+    "skills": [
+      "baking"
+    ],
+    "services": [
+      "φρέσκο ψωμί"
+    ],
+    "needs": [
+      "web development"
+    ],
+    "languages": [
+      "el"
+    ],
+    "website": null,
+    "updated_at": "2026-11-25T10:00:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-1"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000002",
+    "type": "freelancer",
+    "name": "Delos Web Studio",
+    "description": "Experienced in React and Node.js. We build fast websites and online shops for small businesses.",
+    "sector": "software",
+    "region": "South Aegean",
+    "skills": [
+      "React",
+      "Node.js",
+      "web development"
+    ],
+    "services": [
+      "website development",
+      "e-shop setup",
+      "API integration"
+    ],
+    "needs": [
+      "bookkeeping",
+      "UX design"
+    ],
+    "languages": [
+      "en"
+    ],
+    "website": "https://www.deloswebstudio.gr",
+    "updated_at": "2026-11-18T16:49:00Z",
+    "sources": [
+      {
+        "name": "source_b",
+        "url": "http://localhost:4000/b",
+        "original_url": "https://example.org/source_b/b-mock-2"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000003",
+    "type": "freelancer",
+    "name": "Thalassa Design Studio",
+    "description": "Thalassa Design Studio specialises in user research and Figma. We offer branding and app prototypes.",
+    "sector": "design",
+    "region": "Central Macedonia",
+    "skills": [
+      "user research",
+      "Figma",
+      "graphic design"
+    ],
+    "services": [
+      "branding",
+      "app prototypes"
+    ],
+    "needs": [
+      "web development"
+    ],
+    "languages": [
+      "en",
+      "el"
+    ],
+    "website": "https://www.thalassadesign.gr",
+    "updated_at": "2026-06-20T21:44:00Z",
+    "sources": [
+      {
+        "name": "source_b",
+        "url": "http://localhost:4000/b",
+        "original_url": "https://example.org/source_b/b-mock-3"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000004",
+    "type": "sme",
+    "name": "Meteora Consulting",
+    "description": "Εμπειρία σε μισθοδοσία και λογιστική για μικρές επιχειρήσεις.",
+    "sector": "finance",
+    "region": "Thessaly",
+    "skills": [
+      "μισθοδοσία",
+      "λογιστική",
+      "ΦΠΑ"
+    ],
+    "services": [
+      "τήρηση βιβλίων",
+      "σύσταση εταιρείας"
+    ],
+    "needs": [
+      "συντήρηση ιστοσελίδων"
+    ],
+    "languages": [
+      "el"
+    ],
+    "website": "https://www.meteoraconsulting.gr",
+    "updated_at": "2026-09-10T01:52:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-4"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000005",
+    "type": "young_entrepreneur",
+    "name": "AgroSense",
+    "description": "Startup building low-cost soil sensors and a mobile app for olive growers.",
+    "sector": "agritech",
+    "region": "Crete",
+    "skills": [
+      "IoT",
+      "Python",
+      "data analysis"
+    ],
+    "services": [
+      "soil monitoring",
+      "irrigation advice"
+    ],
+    "needs": [
+      "UX design",
+      "funding consulting"
+    ],
+    "languages": [
+      "en",
+      "el"
+    ],
+    "website": "https://www.agrosense.gr",
+    "updated_at": "2026-11-02T09:15:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-5"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000006",
+    "type": "sme",
+    "name": "Zagori Guesthouse",
+    "description": "Εμπειρία σε guided tours και foreign languages. Οι υπηρεσίες μας: εμπειρίες κρασιού, sightseeing tours.",
+    "sector": "tourism",
+    "region": "Epirus",
+    "skills": [
+      "guided tours",
+      "foreign languages",
+      "event planning"
+    ],
+    "services": [
+      "εμπειρίες κρασιού",
+      "sightseeing tours"
+    ],
+    "needs": [
+      "content writing",
+      "event photography"
+    ],
+    "languages": [
+      "el",
+      "en"
+    ],
+    "website": "https://www.zagoriguesthouse.gr",
+    "updated_at": "2026-05-28T14:53:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-6"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000007",
+    "type": "freelancer",
+    "name": "Argo Photo",
+    "description": "Εμπειρία σε στρατηγική περιεχομένου και drone filming. Φωτογράφιση εκδηλώσεων και προωθητικά βίντεο.",
+    "sector": "creative",
+    "region": "Attica",
+    "skills": [
+      "photography",
+      "drone filming",
+      "στρατηγική περιεχομένου"
+    ],
+    "services": [
+      "promotional videos",
+      "event photography"
+    ],
+    "needs": [
+      "custom software"
+    ],
+    "languages": [
+      "el",
+      "en"
+    ],
+    "website": null,
+    "updated_at": "2026-10-25T01:56:00Z",
+    "sources": [
+      {
+        "name": "source_b",
+        "url": "http://localhost:4000/b",
+        "original_url": "https://example.org/source_b/b-mock-7"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000008",
+    "type": "sme",
+    "name": "Kritis Transport",
+    "description": "At Kritis Transport we provide courier delivery, storage space and route planning across Crete.",
+    "sector": "logistics",
+    "region": "Crete",
+    "skills": [
+      "warehousing",
+      "route planning"
+    ],
+    "services": [
+      "courier delivery",
+      "storage space"
+    ],
+    "needs": [
+      "web development",
+      "bookkeeping"
+    ],
+    "languages": [
+      "el",
+      "en"
+    ],
+    "website": "https://www.kritistransport.gr",
+    "updated_at": "2026-08-14T11:20:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-8"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000009",
+    "type": "young_entrepreneur",
+    "name": "Ελιά & Κρασί",
+    "description": "Νέα επιχείρηση που πουλάει τοπικά προϊόντα από μικρούς παραγωγούς μέσω e-shop.",
+    "sector": "food",
+    "region": "Peloponnese",
+    "skills": [
+      "εξαγωγές",
+      "τοπικά προϊόντα"
+    ],
+    "services": [
+      "e-shop τοπικών προϊόντων"
+    ],
+    "needs": [
+      "web development",
+      "graphic design",
+      "courier delivery"
+    ],
+    "languages": [
+      "el"
+    ],
+    "website": null,
+    "updated_at": "2026-10-30T18:05:00Z",
+    "sources": [
+      {
+        "name": "source_b",
+        "url": "http://localhost:4000/b",
+        "original_url": "https://example.org/source_b/b-mock-9"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000010",
+    "type": "freelancer",
+    "name": "Nikos Code",
+    "description": "Full-stack developer in Thessaloniki. TypeScript, React and PostgreSQL for startups.",
+    "sector": "software",
+    "region": "Central Macedonia",
+    "skills": [
+      "TypeScript",
+      "React",
+      "PostgreSQL",
+      "web development"
+    ],
+    "services": [
+      "custom software",
+      "website development"
+    ],
+    "needs": [
+      "graphic design"
+    ],
+    "languages": [
+      "el",
+      "en"
+    ],
+    "website": "https://www.nikoscode.dev",
+    "updated_at": "2026-11-20T08:00:00Z",
+    "sources": [
+      {
+        "name": "source_b",
+        "url": "http://localhost:4000/b",
+        "original_url": "https://example.org/source_b/b-mock-10"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000011",
+    "type": "sme",
+    "name": "Εργαστήριο Olympus",
+    "description": "Εργαστήριο Olympus specialises in ξυλουργική and handmade furniture. We offer a handicraft e-shop.",
+    "sector": "retail",
+    "region": "Ionian Islands",
+    "skills": [
+      "ξυλουργική",
+      "κεραμική",
+      "handmade jewelry"
+    ],
+    "services": [
+      "handicraft e-shop",
+      "custom furniture"
+    ],
+    "needs": [
+      "branding",
+      "courier delivery"
+    ],
+    "languages": [
+      "el",
+      "en"
+    ],
+    "website": "https://www.olympusworkshop.gr",
+    "updated_at": "2026-10-08T17:04:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-11"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000012",
+    "type": "young_entrepreneur",
+    "name": "BlueRoute",
+    "description": "Startup planning sustainable island-hopping trips with a booking app.",
+    "sector": "tourism",
+    "region": "South Aegean",
+    "skills": [
+      "product management",
+      "marketing"
+    ],
+    "services": [
+      "trip planning",
+      "booking app"
+    ],
+    "needs": [
+      "web development",
+      "event photography",
+      "funding consulting"
+    ],
+    "languages": [
+      "en"
+    ],
+    "website": "https://www.blueroute.gr",
+    "updated_at": "2026-09-29T12:40:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-12"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000013",
+    "type": "freelancer",
+    "name": "Μαρία Γραφιστική",
+    "description": "Γραφίστρια με εμπειρία σε λογότυπα, συσκευασίες και social media.",
+    "sector": "design",
+    "region": "Attica",
+    "skills": [
+      "graphic design",
+      "branding",
+      "Illustrator"
+    ],
+    "services": [
+      "λογότυπο και branding",
+      "σχεδιασμός συσκευασίας"
+    ],
+    "needs": [
+      "bookkeeping"
+    ],
+    "languages": [
+      "el"
+    ],
+    "website": null,
+    "updated_at": "2026-11-11T15:30:00Z",
+    "sources": [
+      {
+        "name": "source_b",
+        "url": "http://localhost:4000/b",
+        "original_url": "https://example.org/source_b/b-mock-13"
+      }
+    ],
+    "cluster": null
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000014",
+    "type": "sme",
+    "name": "Hermes Accounting",
+    "description": "Bookkeeping, payroll and EU funding applications for SMEs and startups.",
+    "sector": "finance",
+    "region": "Central Macedonia",
+    "skills": [
+      "bookkeeping",
+      "payroll",
+      "funding consulting"
+    ],
+    "services": [
+      "tax returns",
+      "EU funding applications"
+    ],
+    "needs": [
+      "website development"
+    ],
+    "languages": [
+      "en",
+      "el"
+    ],
+    "website": "https://www.hermesaccounting.gr",
+    "updated_at": "2026-07-17T10:10:00Z",
+    "sources": [
+      {
+        "name": "source_a",
+        "url": "http://localhost:4000/a",
+        "original_url": "https://example.org/source_a/a-mock-14"
+      }
+    ],
+    "cluster": null
+  }
+]
