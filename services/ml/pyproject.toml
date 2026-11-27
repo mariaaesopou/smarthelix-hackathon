@@ -3,7 +3,8 @@ name = "smarthelix-ml"
 version = "0.1.0"
 description = "Role 2 ML functions: preprocessing, similarity, matchmaking, clustering, LSH benchmark"
 requires-python = ">=3.11,<3.12"
-dependencies = ["pyspark[ml]==3.5.1"]  # the ml extra brings numpy, which pyspark.ml imports
+# pyspark[ml] brings numpy; PySpark 3.5 predates numpy 2 (it calls np.in1d and np.string_, both removed there).
+dependencies = ["pyspark[ml]==3.5.1", "numpy>=1.22,<2"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
