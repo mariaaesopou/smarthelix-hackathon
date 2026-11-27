@@ -1,0 +1,34 @@
+# Worker image: Node (BullMQ consumers) + Python 3.11 + Java 17 (PySpark jobs it spawns).
+# Python deps are installed here, the code is copied last, so code edits rebuild fast.
+FROM node:22-bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-17-jre-headless python3.11 python3.11-venv ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /usr/local/bin/uv
+# Keep versions in step with services/pipeline and services/ml pyproject.toml.
+RUN uv venv /opt/venv --python python3.11 \
+ && VIRTUAL_ENV=/opt/venv uv pip install "pyspark[ml]==3.5.1" "numpy>=1.22,<2" "pandas>=1.5,<3" "psycopg[binary]>=3.2,<4" "pydantic>=2.10,<3" "pytest>=8"
+ENV VIRTUAL_ENV=/opt/venv PATH=/opt/venv/bin:$PATH \
+    PYTHON_BIN=/opt/venv/bin/python \
+    PYTHONPATH=/repo/services/pipeline/src:/repo/services/ml/src \
+    PYSPARK_PYTHON=/opt/venv/bin/python
+
+# Warm the Ivy cache so the first Spark job does not download the Postgres JDBC driver.
+RUN python -c "from pyspark.sql import SparkSession; \
+SparkSession.builder.master('local[1]').config('spark.jars.packages','org.postgresql:postgresql:42.7.4').getOrCreate().stop()"
+
+RUN npm install -g pnpm@12.23.0
+WORKDIR /repo
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/web/package.json apps/web/
+COPY apps/api/package.json apps/api/
+COPY apps/worker/package.json apps/worker/
+COPY packages/shared/package.json packages/shared/
+COPY services/mock-sources/package.json services/mock-sources/
+RUN pnpm install --frozen-lockfile
+COPY . .
+WORKDIR /repo/apps/worker
+CMD ["npm", "run", "start"]
