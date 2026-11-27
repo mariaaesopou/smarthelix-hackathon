@@ -1,17 +1,27 @@
-import Fastify from "fastify";
 import pg from "pg";
+import { buildApp } from "./app.ts";
+import { createDbProfileRepository } from "./repositories/dbProfiles.ts";
+import { createFixtureProfileRepository } from "./repositories/fixtureProfiles.ts";
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const app = Fastify({ logger: true });
+// PROFILES_SOURCE=fixtures serves the files in src/repositories/fixtures without a database.
+const source = process.env.PROFILES_SOURCE ?? "database";
+if (source !== "database" && source !== "fixtures") {
+  throw new Error(`PROFILES_SOURCE must be "database" or "fixtures", not "${source}"`);
+}
 
-pool.on("error", (err) => app.log.error(err));
+const pool = source === "database" ? new pg.Pool({ connectionString: process.env.DATABASE_URL }) : null;
 
-app.get("/health", async () => {
-  await pool.query("SELECT 1 FROM pipeline_state");
-  return { status: "ok" };
+const app = await buildApp({
+  profiles: pool ? createDbProfileRepository(pool) : createFixtureProfileRepository(),
+  checkHealth: pool ? async () => void (await pool.query("SELECT 1 FROM pipeline_state")) : undefined,
+  logger: true,
 });
+app.log.info(`profiles come from ${source}`);
 
-app.addHook("onClose", () => pool.end());
+if (pool) {
+  pool.on("error", (err) => app.log.error(err));
+  app.addHook("onClose", () => pool.end());
+}
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => void app.close());
 }
