@@ -86,7 +86,9 @@ def test_a_failing_run_is_marked_failed_and_leaves_the_old_results_alone(db):
 
 
 def test_an_active_batch_makes_the_run_retryable(db):
-    db.conn.execute("INSERT INTO ml_batches (data_version, status) VALUES (0, 'running')")
+    # 'queued' (created by the sweep, waiting its turn). A batch left 'running' by a dead process is
+    # closed by the next run instead (test_ml_locks.py), so it no longer blocks.
+    db.conn.execute("INSERT INTO ml_batches (data_version, status) VALUES (0, 'queued')")
     assert main(["similarity"]) == 75  # RetryableError: try again once that batch is done
     assert db.conn.execute("SELECT count(*) FROM ml_runs WHERE id <> ALL(%s)", (db.runs,)).fetchone()[0] == 0
 
