@@ -115,11 +115,21 @@ describe("POST /sync/{source} and GET /sync/runs/{id}", { skip }, () => {
   test("404 unknown source, 422 source without a connector, 400 bad mode", async () => {
     const unknown = await app.inject({ method: "POST", url: "/sync/source_z" });
     assert.equal(unknown.statusCode, 404);
-    const noConnector = await app.inject({ method: "POST", url: "/sync/source_b" });
+    // A source that exists in the database but is not in syncSources.
+    await client.query("INSERT INTO sources (name, base_url) VALUES ('zz_noconn', 'http://zz.example')");
+    const noConnector = await app.inject({ method: "POST", url: "/sync/zz_noconn" });
     assert.equal(noConnector.statusCode, 422);
     const badMode = await app.inject({ method: "POST", url: "/sync/source_a?mode=everything" });
     assert.equal(badMode.statusCode, 400);
     for (const res of [unknown, noConnector, badMode]) assertMatches("error.json", res.json());
+  });
+
+  test("source_b has a connector, so it can be synced too", async () => {
+    await client.query("UPDATE sync_runs SET status = 'failed' WHERE source = 'source_b'"
+      + " AND status IN ('queued', 'etl_running')");
+    const res = await app.inject({ method: "POST", url: "/sync/source_b?mode=full" });
+    assert.equal(res.statusCode, 202, res.body);
+    assert.deepEqual(queue.jobs.at(-1), { syncRunId: res.json<SyncRun>().id, source: "source_b", mode: "full" });
   });
 
   test("GET /sync/runs/{id}: 404 unknown, 400 not a UUID", async () => {

@@ -83,6 +83,7 @@ API, worker and pipeline tests: TBD.
 ```bash
 pnpm db:seed      # synthetic data; needs the stack running
 pnpm etl:a --mode full   # import source A through its connector
+pnpm etl:b --mode full   # import source B (freelancers)
 ```
 
 Connectors and how a run works: [services/pipeline/README.md](services/pipeline/README.md).
