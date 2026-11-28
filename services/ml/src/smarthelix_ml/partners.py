@@ -15,7 +15,12 @@ Formula (documented for the report):
     w_A(p)   = idf(p) / ||idf over A's needs||   A's needs as a unit vector
     w_B(p)   = idf(p) / ||idf over B's offers||  B's offers (skills + services) as a unit vector
     base     = sum over p in needs(A) and offers(B) of w_A(p) * w_B(p)    (cosine, 0..1)
-    score    = base + region_boost * [same region] + type_boost * [different type]
+    raw      = base + region_boost * [same region] + type_boost * [different type]
+    score    = raw / (1 + region_boost + type_boost)                       (0..1)
+
+Dividing by the largest possible raw value keeps the score in 0..1, on the same
+scale as similar-profile scores, so the UI can show either as a percentage. It
+does not change the ranking: every raw score is divided by the same number.
 
 B is a candidate for A only if B covers at least one of A's needs; reasons lists
 those needs in A's own wording. Rare needs weigh more (idf). Dividing by the
@@ -63,6 +68,8 @@ def compute_partners(
     """
     if k < 1:
         raise ValueError("k must be at least 1")
+    if region_boost < 0 or type_boost < 0:
+        raise ValueError("boosts must be zero or positive, or scores could leave 0..1")
     p = to_profile_frame(profiles).cache()
     n = p.count()
 
@@ -118,7 +125,8 @@ def compute_partners(
     same_region = F.coalesce(F.col("ra") == F.col("rb"), F.lit(False)).cast("double")  # unknown: no boost
     other_type = (F.col("ta") != F.col("tb")).cast("double")
     # least(): rounding can push a perfect cosine to 1.0000001
-    score = F.least(F.col("base"), F.lit(1.0)) + region_boost * same_region + type_boost * other_type
+    raw = F.least(F.col("base"), F.lit(1.0)) + region_boost * same_region + type_boost * other_type
+    score = raw / (1.0 + region_boost + type_boost)
 
     order = Window.partitionBy("profile_id").orderBy(F.desc("score"), F.asc("partner_id"))
     return (

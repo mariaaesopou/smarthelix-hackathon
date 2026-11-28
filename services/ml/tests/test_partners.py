@@ -69,18 +69,36 @@ def out_first(rows):
     return rows[0][0]
 
 
-def test_score_is_cosine_plus_the_documented_boosts(spark):
-    rows = [profile("a", needs=["seo"], region="Attica", type="sme"),
-            profile("near_other", services=["seo"], region="Attica", type="freelancer"),
-            profile("near_same", services=["seo"], region="Attica", type="sme"),
-            profile("far_other", services=["seo"], region="Crete", type="freelancer"),
-            profile("unknown", services=["seo"], region=None, type="sme")]
-    s = {p: score for p, _, score, _ in partners(spark, rows)["a"]}
-    # each partner offers exactly a's one need, so the cosine is 1 for all of them
-    assert s["near_other"] == pytest.approx(1.10)
-    assert s["near_same"] == pytest.approx(1.05)
-    assert s["far_other"] == pytest.approx(1.05)
-    assert s["unknown"] == pytest.approx(1.00)   # an unknown region gets no boost
+BOOST_ROWS = [("near_other", "Attica", "freelancer"), ("near_same", "Attica", "sme"),
+              ("far_other", "Crete", "freelancer"), ("unknown", None, "sme")]
+
+
+def boost_case(spark, **kw):
+    rows = [profile("a", needs=["seo"], region="Attica", type="sme")]
+    rows += [profile(pid, services=["seo"], region=r, type=t) for pid, r, t in BOOST_ROWS]
+    return partners(spark, rows, **kw)["a"]
+
+
+def test_score_is_cosine_plus_the_documented_boosts_scaled_to_0_1(spark):
+    s = {p: score for p, _, score, _ in boost_case(spark)}
+    # each partner offers exactly a's one need, so the cosine is 1; raw / (1 + 0.05 + 0.05)
+    assert s["near_other"] == pytest.approx(1.10 / 1.10)
+    assert s["near_same"] == pytest.approx(1.05 / 1.10)
+    assert s["far_other"] == pytest.approx(1.05 / 1.10)
+    assert s["unknown"] == pytest.approx(1.00 / 1.10)   # an unknown region gets no boost
+
+
+def test_scores_never_exceed_1_and_scaling_keeps_the_ranking(spark):
+    scaled = boost_case(spark)
+    assert max(score for _, _, score, _ in scaled) <= 1.0 + 1e-6
+    # same order as ranking by the unscaled raw score (cosine 1 + boosts)
+    raw = {"near_other": 1.10, "near_same": 1.05, "far_other": 1.05, "unknown": 1.00}
+    assert [p for p, *_ in scaled] == sorted(raw, key=lambda p: (-raw[p], p))
+
+
+def test_boosts_must_not_be_negative(spark):
+    with pytest.raises(ValueError, match="boosts"):
+        compute_partners(spark.createDataFrame([profile("a")], PROFILE_SCHEMA), region_boost=-0.1)
 
 
 def test_partial_cover_matches_the_formula(spark):

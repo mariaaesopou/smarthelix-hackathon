@@ -56,8 +56,14 @@ real ones by 10 or more).
 idf(p) = log((n + 1) / (df(p) + 1))            df = profiles offering p
 w_A(p) = idf(p) / ||idf over A's needs||       w_B(p) = idf(p) / ||idf over B's offers||
 base   = sum over p in needs(A) and offers(B) of w_A(p) * w_B(p)       (cosine, 0..1)
-score  = base + 0.05 * [same region] + 0.05 * [different profile type]
+raw    = base + 0.05 * [same region] + 0.05 * [different profile type]
+score  = raw / 1.10                                                    (0..1)
 ```
+
+Dividing by the largest possible raw value (1 + both boosts) keeps partner scores in 0..1,
+like similar-profile scores, so the UI can show them as percentages; the ranking is the same
+as ranking by `raw`. Profiles with no needs (198 on the seed) or only typo'd needs (19) get
+no partners, so the UI needs an empty state for the panel.
 
 B is a candidate only if it covers at least one of A's needs; `reasons` is the JSON text
 `{"matched_needs": [...]}` with those needs in A's own wording (the runner writes it to the
