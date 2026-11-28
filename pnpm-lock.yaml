@@ -190,9 +190,15 @@ importers:
       '@smarthelix/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      bullmq:
+        specifier: 6.7.10
+        version: 6.7.10(ioredis@6.0.0)(pg@8.23.1)
       fastify:
         specifier: 5.12.8
         version: 5.12.8
+      ioredis:
+        specifier: 6.0.0
+        version: 6.0.0
       pg:
         specifier: 8.23.1
         version: 8.23.1

@@ -18,12 +18,23 @@ export interface ApiError {
   message: string;
 }
 
+/**
+ * Payload of a job on the etl queue (apps/worker EtlJobData). POST /sync/{source} creates the sync_runs row first and uses its id as the job id (architecture rule 8).
+ */
 export interface EtlJob {
-  sync_run_id: string;
+  /**
+   * sync_runs row the connector continues; omitted for a run started outside the API.
+   */
+  syncRunId?: string;
+  source: string;
+  mode: "full" | "incremental";
 }
 
+/**
+ * Payload of a job on the ml queue (apps/worker MlJobData). Without batchId the run creates and closes its own batch.
+ */
 export interface MlJob {
-  batch_id: string;
+  batchId?: string;
 }
 
 /**
@@ -138,8 +149,11 @@ export interface Recommendation {
   matched_needs: string[];
 }
 
+/**
+ * Payload of a job on the resolution queue (apps/worker ResolutionJobData).
+ */
 export interface ResolutionJob {
-  sync_run_id: string;
+  syncRunId: string;
 }
 
 export interface SimilarProfile {

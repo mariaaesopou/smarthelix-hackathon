@@ -2,13 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "resolution-job.json",
   "title": "ResolutionJob",
+  "description": "Payload of a job on the resolution queue (apps/worker ResolutionJobData).",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "sync_run_id"
+    "syncRunId"
   ],
   "properties": {
-    "sync_run_id": {
+    "syncRunId": {
       "type": "string",
       "format": "uuid"
     }

@@ -13,6 +13,8 @@ Through the web app the same routes are under `/api`, for example
 | `GET /profiles/{id}` | `Profile` (`profile.json`) | 307, 400, 404 |
 | `GET /profiles/{id}/similar` | `Recommendation[]` (`recommendation.json`) | 307, 400, 404 |
 | `GET /profiles/{id}/partners` | `Recommendation[]` (`recommendation.json`) | 307, 400, 404 |
+| `POST /sync/{source}` | 202 + `SyncRun` (`sync-run.json`) | 400, 404, 409, 422, 503 |
+| `GET /sync/runs/{id}` | `SyncRun` (`sync-run.json`) | 400, 404 |
 
 Errors use `error.json`: `{ "statusCode", "error", "message" }`.
 
@@ -61,6 +63,34 @@ Until the Spark matchmaking job exists, `pnpm db:seed` loads hand-made partners
 (`db/seeds/003_dev_partners.sql`: a partner offers something the profile needs).
 Real similar profiles come from `docker compose --profile tools run --rm pipeline
 python -m pipeline similarity`.
+
+### `POST /sync/{source}`
+
+Starts an import of one source; the worker runs its connector. `?mode=full` reads
+everything, `?mode=incremental` (the default) only what changed since the last
+successful run.
+
+1. Inserts a `sync_runs` row (`queued`), then adds an `etl` job whose id is that
+   row's id (architecture rule 8). The connector continues the same row
+   (`--sync-run-id`) through `etl_running` to `resolved` or `failed`.
+2. Answers **202** with the `SyncRun` and `Location: runs/{id}`. Poll
+   `GET /sync/runs/{id}` for progress and counts.
+
+| Status | When |
+|---|---|
+| 409 | A run of this source is already queued or running; the message names it |
+| 404 | No such source |
+| 422 | The source has no connector yet (`syncSources` in `packages/shared/constants.json`) |
+| 503 | Redis is unavailable; the row is marked `failed` (`queue_unavailable`) so it does not block the next sync |
+
+```bash
+curl -X POST "http://localhost:3000/sync/source_a?mode=full"
+curl "http://localhost:3000/sync/runs/<id>"
+```
+
+`/sync` is enabled when the API runs on the database and `REDIS_URL` is set; with
+`PROFILES_SOURCE=fixtures` it is off. Add a source to `syncSources` when its
+connector exists.
 
 ## Data source
 

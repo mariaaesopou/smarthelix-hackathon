@@ -5,7 +5,8 @@
   "exports": {
     "./generated": "./generated/index.ts",
     "./schemas/*": "./schemas/*",
-    "./examples/*": "./examples/*"
+    "./examples/*": "./examples/*",
+    "./constants.json": "./constants.json"
   },
   "scripts": { "generate": "node scripts/generate.js", "test": "node --test scripts/examples.test.js" },
   "devDependencies": { "ajv": "8.20.0", "ajv-formats": "3.0.1", "json-schema-to-typescript": "16.0.0" }

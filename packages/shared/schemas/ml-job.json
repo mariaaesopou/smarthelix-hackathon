@@ -2,13 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "ml-job.json",
   "title": "MlJob",
+  "description": "Payload of a job on the ml queue (apps/worker MlJobData). Without batchId the run creates and closes its own batch.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "batch_id"
-  ],
+  "required": [],
   "properties": {
-    "batch_id": {
+    "batchId": {
       "type": "string",
       "format": "uuid"
     }

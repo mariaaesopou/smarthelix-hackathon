@@ -3,13 +3,24 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, constr
+
+
+class Mode(StrEnum):
+    full = 'full'
+    incremental = 'incremental'
 
 
 class EtlJob(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    sync_run_id: UUID
+    syncRunId: UUID | None = Field(
+        None,
+        description='sync_runs row the connector continues; omitted for a run started outside the API.',
+    )
+    source: constr(min_length=1)
+    mode: Mode
