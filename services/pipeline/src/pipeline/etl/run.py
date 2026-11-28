@@ -10,6 +10,7 @@ from psycopg.types.json import Jsonb
 
 from pipeline.connectors.base import Connector
 from pipeline.constants import K_ERASURE
+from pipeline.errors import PermanentError
 from pipeline.etl.load import upsert
 from pipeline.resolution.one_to_one import resolve
 
@@ -50,19 +51,40 @@ def start_run(conn: Connection, source: str, mode: Mode) -> str:
     return run_id
 
 
+def claim_run(conn: Connection, source: str, sync_run_id: str) -> str:
+    """Continue the sync_runs row that POST /sync created, instead of inserting a second one.
+
+    'failed' and 'etl_running' are claimable because a BullMQ retry (or a stalled job picked
+    up again) reuses the same row. An unknown id, another source's id or a finished run is a
+    permanent error: retrying cannot make it valid.
+    """
+    with conn.transaction():
+        row = conn.execute(
+            "UPDATE sync_runs SET status = 'etl_running', started_at = now(), error_code = NULL,"
+            " finished_at = NULL WHERE id = %s AND source = %s"
+            " AND status IN ('queued', 'failed', 'etl_running') RETURNING id::text",
+            (sync_run_id, source)).fetchone()
+    if row is None:
+        raise PermanentError(f"sync run {sync_run_id} is unknown, belongs to another source, or is already done")
+    return row[0]
+
+
 def run_etl(conn: Connection, connector: Connector, mode: Mode,
-            erasure_secret: bytes | None = None, resolve_after: bool = True) -> RunResult:
+            erasure_secret: bytes | None = None, resolve_after: bool = True,
+            sync_run_id: str | None = None) -> RunResult:
     """Run extract-transform-load for one source and record it in sync_runs.
 
     Each page and the run's cursor are committed together (rule 1), so a failed
     run never leaves half a page. The watermark only moves when the whole run
     succeeds; on failure the run is marked failed and the error re-raised.
+    With `sync_run_id` the run continues that existing row (see claim_run).
     """
     source = connector.source
     since = None
     if mode == "incremental" and (mark := last_watermark(conn, source)):
         since = mark - OVERLAP
-    result = RunResult(run_id=start_run(conn, source, mode))
+    run_id = claim_run(conn, source, sync_run_id) if sync_run_id else start_run(conn, source, mode)
+    result = RunResult(run_id=run_id)
     newest: datetime | None = None
 
     try:

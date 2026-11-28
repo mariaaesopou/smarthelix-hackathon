@@ -13,7 +13,16 @@ async function runJob(job: string, args: string[], timeoutMs: number, signal?: A
 }
 
 export const processEtl = (job: Job<EtlJobData>, _token?: string, signal?: AbortSignal) =>
-  runJob("etl", ["--source", job.data.source, "--mode", job.data.mode], 10 * MINUTE, signal);
+  runJob("etl", etlArgs(job.data), 10 * MINUTE, signal);
+
+/** Pass the API's sync_runs id along so the connector continues that row, not a second one. */
+export function etlArgs(data: EtlJobData): string[] {
+  return [
+    "--source", data.source,
+    "--mode", data.mode,
+    ...(data.syncRunId ? ["--sync-run-id", data.syncRunId] : []),
+  ];
+}
 
 export const processMl = (job: Job<MlJobData>, _token?: string, signal?: AbortSignal) =>
   runJob("similarity", job.data.batchId ? ["--batch-id", job.data.batchId] : [], 30 * MINUTE, signal);

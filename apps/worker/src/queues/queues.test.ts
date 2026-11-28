@@ -9,6 +9,7 @@ import { runPipelineJob } from "../launcher/run-pipeline-job.js";
 import { throwUnlessOk } from "../launcher/to-queue-error.js";
 import { makeBackoffStrategy } from "./backoff.js";
 import { QUEUE_NAMES, defaultJobOptions } from "./index.js";
+import { etlArgs } from "../consumers/index.js";
 
 const constants = JSON.parse(readFileSync(new URL("../../../../packages/shared/constants.json", import.meta.url), "utf8"));
 
@@ -106,4 +107,20 @@ redisTest("cancelling then closing the worker stops the running child process", 
   } finally {
     await h.close();
   }
+});
+
+test("etlArgs passes the API's syncRunId on, and omits it when absent", () => {
+  const id = randomUUID();
+  assert.deepEqual(etlArgs({ syncRunId: id, source: "source_a", mode: "full" }),
+    ["--source", "source_a", "--mode", "full", "--sync-run-id", id]);
+  assert.deepEqual(etlArgs({ syncRunId: "", source: "source_a", mode: "incremental" }),
+    ["--source", "source_a", "--mode", "incremental"]);
+});
+
+test("the --sync-run-id flag reaches the Python CLI", async () => {
+  // A malformed id is rejected by argparse (exit 65) before any database access, and the
+  // message names the flag: proof the CLI received and parsed it.
+  const o = await runPipelineJob("etl", etlArgs({ syncRunId: "not-a-uuid", source: "source_a", mode: "full" }), { timeoutMs: 20_000 });
+  assert.equal(o.kind, "permanent");
+  assert.match((o as { reason: string }).reason, /sync-run-id/);
 });
