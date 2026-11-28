@@ -43,7 +43,7 @@ def run(args: argparse.Namespace) -> None:
     except RunAlreadyActive as exc:
         raise RetryableError(f"another {args.source} run is queued or running") from exc
     except SourceUnavailable as exc:
-        raise RetryableError(str(exc)) from exc
+        raise RetryableError(str(exc), retry_after_s=exc.retry_after_s) from exc
     finally:
         conn.close()
 

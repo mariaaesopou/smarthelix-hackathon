@@ -45,6 +45,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return EXIT_PERMANENT
     except RetryableError as exc:
         print(f"retryable failure: {exc}", file=sys.stderr)
+        if exc.retry_after_s is not None:
+            # Last line on purpose: the launcher only keeps the tail of stderr.
+            print(f"retry-after-ms: {round(exc.retry_after_s * 1000)}", file=sys.stderr)
         return EXIT_RETRYABLE
     except Exception:  # noqa: BLE001 - deliberate catch-all, see below
         # Decision: unexpected errors fail open (retry). Spark/JDBC failures reach us

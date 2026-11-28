@@ -12,6 +12,7 @@ from ..errors import PermanentError, RetryableError
 
 def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--outcome", choices=["ok", "retry", "permanent", "crash"], default="ok")
+    p.add_argument("--retry-after", type=float, default=None, help="seconds hint for --outcome retry")
     p.add_argument("--sleep", type=float, default=0.0, help="seconds to wait first (timeout tests)")
     p.add_argument("--spark", action="store_true", help="also start a local Spark session")
 
@@ -27,7 +28,7 @@ def run(args: argparse.Namespace) -> None:
             spark.stop()
     time.sleep(args.sleep)
     if args.outcome == "retry":
-        raise RetryableError("selftest asked for a retryable failure")
+        raise RetryableError("selftest asked for a retryable failure", retry_after_s=args.retry_after)
     if args.outcome == "permanent":
         raise PermanentError("selftest asked for a permanent failure")
     if args.outcome == "crash":
