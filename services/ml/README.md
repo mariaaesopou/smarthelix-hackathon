@@ -9,7 +9,7 @@ loads `profiles`, calls them and writes the ML tables.
 | `preprocess(df)` | done | adds `tokens` |
 | `build_features(df)` | done | adds `features` (L2-normalised TF-IDF) and returns the fitted model |
 | `compute_similar(df)` | done | `similar_profiles`: `profile_id, similar_id, rank, score` (top 20 stored, API shows 10) |
-| `compute_partners(df)` | day 5-6 | `potential_partners`: `profile_id, partner_id, rank, score, reasons` |
+| `compute_partners(df)` | done | `potential_partners`: `profile_id, partner_id, rank, score, reasons` (top 20) |
 | `compute_clusters(df)` | day 6-7 | `cluster_assignments`: `profile_id, cluster_id, label` |
 
 `run_id` is added by the runner when it writes. Names and ground-truth labels are never features.
@@ -44,6 +44,30 @@ Hand check on the 2k seed (`python -m smarthelix_ml`): 5 profiles from 5 sectors
 neighbours from their own field; about 4 s for all 2,004 profiles. Known limit: TF-IDF
 matches identical words only, so Greek-only and English-only profiles almost never match
 each other; bilingual profiles are the bridge (multilingual embeddings are CUT-2).
+
+## Potential partners
+
+`compute_partners(profiles, k=20)`: who offers what a profile needs. Whole phrases are the
+terms ("website maintenance" is one term), normalised like the tokens, and only phrases
+offered by at least 4 profiles count (on the 2k seed typo phrases are offered by at most 3,
+real ones by 10 or more).
+
+```
+idf(p) = log((n + 1) / (df(p) + 1))            df = profiles offering p
+w_A(p) = idf(p) / ||idf over A's needs||       w_B(p) = idf(p) / ||idf over B's offers||
+base   = sum over p in needs(A) and offers(B) of w_A(p) * w_B(p)       (cosine, 0..1)
+score  = base + 0.05 * [same region] + 0.05 * [different profile type]
+```
+
+B is a candidate only if it covers at least one of A's needs; `reasons` is the JSON text
+`{"matched_needs": [...]}` with those needs in A's own wording (the runner writes it to the
+jsonb column). Chosen by measurement on the 2k seed, labels used for inspection only: share
+of top-10 partners from an archetype A really needs is 95.8% for cosine, 93.9% for the SQL
+rule in `db/seeds/003_dev_partners.sql`, 92.7% for idf-weighted coverage. Cosine favours
+focused providers (5.8 offers on average) over padded lists (8.5). The 0.05 boosts raise
+same-region partners in the top 10 from 14% to 34% and different-type from 62% to 84%,
+at 94.4%. Known limits: a need with a typo never matches (19 of 1,806 profiles get no
+partner for that reason), and needs and offers in different languages do not match.
 
 ## Run
 
