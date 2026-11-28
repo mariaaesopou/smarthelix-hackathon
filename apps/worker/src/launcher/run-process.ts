@@ -7,7 +7,7 @@ export const EXIT_PERMANENT = 65;
 
 export type Outcome =
   | { kind: "ok" }
-  | { kind: "retryable"; reason: string }
+  | { kind: "retryable"; reason: string; retryAfterMs?: number }
   | { kind: "permanent"; reason: string };
 
 export interface RunOptions {
@@ -17,9 +17,18 @@ export interface RunOptions {
   killGraceMs?: number;
   env?: NodeJS.ProcessEnv;
   cwd?: string;
+  /** Aborting (worker shutdown, lost lock) stops the child the same way a timeout does. */
+  signal?: AbortSignal;
 }
 
 const TAIL_BYTES = 4096;
+
+/** The Python CLI ends stderr with `retry-after-ms: N` when a source sent Retry-After. */
+export function parseRetryAfterMs(stderrTail: string): number | undefined {
+  const matches = [...stderrTail.matchAll(/^retry-after-ms: (\d+)\s*$/gm)];
+  const last = matches.at(-1);
+  return last ? Number(last[1]) : undefined;
+}
 
 /**
  * Run a child process to completion and classify how it ended.
@@ -48,6 +57,7 @@ export function runProcess(command: string, args: string[], opts: RunOptions): P
     });
 
     let timedOut = false;
+    let aborted = false;
     let hardKill: NodeJS.Timeout | undefined;
 
     const killGroup = (signal: NodeJS.Signals) => {
@@ -58,13 +68,23 @@ export function runProcess(command: string, args: string[], opts: RunOptions): P
       }
     };
 
+    const stop = () => {
+      killGroup("SIGTERM"); // polite: lets Spark shut its JVM down
+      hardKill ??= setTimeout(() => killGroup("SIGKILL"), killGraceMs);
+    };
     const timer = setTimeout(() => {
       timedOut = true;
-      killGroup("SIGTERM"); // polite: lets Spark shut its JVM down
-      hardKill = setTimeout(() => killGroup("SIGKILL"), killGraceMs);
+      stop();
     }, opts.timeoutMs);
+    const onAbort = () => {
+      aborted = true;
+      stop();
+    };
+    if (opts.signal?.aborted) onAbort();
+    else opts.signal?.addEventListener("abort", onAbort, { once: true });
 
     child.once("error", (err) => {
+      opts.signal?.removeEventListener("abort", onAbort);
       clearTimeout(timer);
       clearTimeout(hardKill);
       reject(err);
@@ -72,11 +92,14 @@ export function runProcess(command: string, args: string[], opts: RunOptions): P
 
     // "close" (not "exit") fires after stdio is drained, so stderrTail is complete.
     child.once("close", (code, signal) => {
+      opts.signal?.removeEventListener("abort", onAbort);
       clearTimeout(timer);
       clearTimeout(hardKill);
       killGroup("SIGKILL"); // sweep any grandchild that outlived its parent
 
-      if (timedOut) {
+      if (aborted) {
+        resolve({ kind: "retryable", reason: "aborted: worker is shutting down" });
+      } else if (timedOut) {
         resolve({ kind: "retryable", reason: `timed out after ${opts.timeoutMs} ms` });
       } else if (code === EXIT_OK) {
         resolve({ kind: "ok" });
@@ -87,7 +110,11 @@ export function runProcess(command: string, args: string[], opts: RunOptions): P
         resolve({ kind: "retryable", reason: `killed by ${signal}` });
       } else {
         // 75, and any code we do not recognise, fail open like the Python side does.
-        resolve({ kind: "retryable", reason: stderrTail.trim() || `exit ${code}` });
+        resolve({
+          kind: "retryable",
+          reason: stderrTail.trim() || `exit ${code}`,
+          retryAfterMs: parseRetryAfterMs(stderrTail),
+        });
       }
     });
   });

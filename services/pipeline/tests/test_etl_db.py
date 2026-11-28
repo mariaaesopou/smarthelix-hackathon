@@ -144,3 +144,58 @@ def test_a_failed_run_is_marked_failed(conn):
         "SELECT status, error_code, counts FROM sync_runs WHERE source = %s", (SOURCE,)).fetchone()
     assert (status, error) == ("failed", "ConnectionError")
     assert counts["inserted"] == 1  # the first page was committed before the failure
+
+
+def queued_row(conn, source=SOURCE, mode="full") -> str:
+    """The row POST /sync inserts before it adds the job."""
+    return conn.execute("INSERT INTO sync_runs (source, mode, status) VALUES (%s, %s, 'queued') RETURNING id::text",
+                        (source, mode)).fetchone()[0]
+
+
+def runs_of(conn):
+    return conn.execute("SELECT count(*) FROM sync_runs WHERE source = %s", (SOURCE,)).fetchone()[0]
+
+
+def test_a_queued_row_is_continued_not_duplicated(conn):
+    row_id = queued_row(conn)
+    result = run_etl(conn, FakeConnector([raw(1), raw(2)]), "full", sync_run_id=row_id)
+    assert result.run_id == row_id
+    assert runs_of(conn) == 1
+    status, counts, started, finished = conn.execute(
+        "SELECT status, counts, started_at, finished_at FROM sync_runs WHERE id = %s", (row_id,)).fetchone()
+    assert status == "resolved" and counts["fetched"] == 2
+    assert started is not None and finished is not None
+
+
+def test_a_retry_after_failure_reuses_the_same_row(conn):
+    class Broken(FakeConnector):
+        def pages(self, since, cursor=None):
+            raise ConnectionError("source went away")
+            yield  # pragma: no cover
+
+    row_id = queued_row(conn)
+    with pytest.raises(ConnectionError):
+        run_etl(conn, Broken([]), "full", sync_run_id=row_id)
+    assert conn.execute("SELECT status FROM sync_runs WHERE id = %s", (row_id,)).fetchone()[0] == "failed"
+
+    result = run_etl(conn, FakeConnector([raw(1)]), "full", sync_run_id=row_id)  # BullMQ retry
+    assert result.run_id == row_id and runs_of(conn) == 1
+    status, error = conn.execute("SELECT status, error_code FROM sync_runs WHERE id = %s", (row_id,)).fetchone()
+    assert status == "resolved" and error is None  # the earlier failure is cleared
+
+
+def test_an_unusable_sync_run_id_is_permanent(conn):
+    from uuid import uuid4
+
+    from pipeline.errors import PermanentError
+
+    with pytest.raises(PermanentError):  # unknown id
+        run_etl(conn, FakeConnector([raw(1)]), "full", sync_run_id=str(uuid4()))
+    conn.execute("INSERT INTO sources (name, base_url) VALUES ('zz_other', 'http://zz.example')")
+    other = queued_row(conn, source="zz_other")
+    with pytest.raises(PermanentError):  # another source's row
+        run_etl(conn, FakeConnector([raw(1)]), "full", sync_run_id=other)
+    done = queued_row(conn)
+    run_etl(conn, FakeConnector([raw(1)]), "full", sync_run_id=done)
+    with pytest.raises(PermanentError):  # already resolved
+        run_etl(conn, FakeConnector([raw(1)]), "full", sync_run_id=done)

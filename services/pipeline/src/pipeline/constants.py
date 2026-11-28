@@ -10,3 +10,4 @@ _FILE = Path(__file__).resolve().parents[4] / "packages" / "shared" / "constants
 _DATA = json.loads(_FILE.read_text(encoding="utf-8"))
 
 K_ERASURE: int = _DATA["advisoryLocks"]["K_ERASURE"]
+K_ML: int = _DATA["advisoryLocks"]["K_ML"]

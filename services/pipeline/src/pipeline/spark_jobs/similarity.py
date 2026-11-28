@@ -11,12 +11,14 @@ the CLI) stays cheap and `selftest` never loads Spark.
 
 import argparse
 import os
+import sys
 import time
 import uuid
 
 from ..db import connect, database_url
 from ..errors import PermanentError
-from .ml_run import Run, fail_run, finish_run, start_run
+from .ml_run import (Run, acquire_run_locks, fail_run, finish_run, prune_old_runs,
+                     release_run_locks, start_run)
 
 KIND = "similarity"
 TABLE = "similar_profiles"
@@ -60,7 +62,14 @@ def run(args: argparse.Namespace, compute=None) -> None:
 
     compute = compute or compute_similar
     conn = connect()
-    current = start_run(conn, KIND, args.batch_id, {"k": args.k})
+    try:
+        reaped = acquire_run_locks(conn, args.batch_id)
+        if reaped:
+            print(f"closed {reaped} run(s) left running by a dead process", file=sys.stderr, flush=True)
+        current = start_run(conn, KIND, args.batch_id, {"k": args.k})
+    except BaseException:
+        conn.close()  # also releases any lock taken
+        raise
     started = time.perf_counter()
     try:
         spark = get_spark(app_name=KIND, driver_memory=os.environ.get("SPARK_DRIVER_MEMORY", "2g"), jdbc=True)
@@ -73,6 +82,7 @@ def run(args: argparse.Namespace, compute=None) -> None:
         metrics = _validate(conn, current, args.k)
         metrics["seconds"] = round(time.perf_counter() - started, 1)
         finish_run(conn, current, metrics)
+        metrics["pruned_runs"] = prune_old_runs(conn, KIND)
         print(f"similarity run {current.id} ok: {metrics}", flush=True)
     except ValueError as exc:
         # e.g. "empty vocabulary": too little text in the data. Retrying cannot add text.
@@ -82,4 +92,5 @@ def run(args: argparse.Namespace, compute=None) -> None:
         fail_run(conn, current, TABLE, str(exc))
         raise  # PermanentError / RetryableError keep their meaning; anything else exits 75
     finally:
+        release_run_locks(conn)
         conn.close()

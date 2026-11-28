@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+import uuid
 
 from ..connectors.http import SourceUnavailable
 from ..connectors.source_a import SourceAConnector
@@ -26,6 +27,8 @@ def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--source", required=True, choices=sorted(CONNECTORS))
     p.add_argument("--mode", choices=["full", "incremental"], default="incremental",
                    help="incremental asks only for records changed since the last successful run")
+    p.add_argument("--sync-run-id", type=uuid.UUID, default=None,
+                   help="continue this sync_runs row (created by POST /sync) instead of inserting one")
     p.add_argument("--no-resolve", action="store_true", help="load source_records only")
 
 
@@ -39,11 +42,12 @@ def run(args: argparse.Namespace) -> None:
     conn = connect()
     try:
         result = run_etl(conn, CONNECTORS[args.source](base_url), args.mode,
-                         erasure_secret=secret, resolve_after=not args.no_resolve)
+                         erasure_secret=secret, resolve_after=not args.no_resolve,
+                         sync_run_id=str(args.sync_run_id) if args.sync_run_id else None)
     except RunAlreadyActive as exc:
         raise RetryableError(f"another {args.source} run is queued or running") from exc
     except SourceUnavailable as exc:
-        raise RetryableError(str(exc)) from exc
+        raise RetryableError(str(exc), retry_after_s=exc.retry_after_s) from exc
     finally:
         conn.close()
 
