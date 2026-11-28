@@ -8,6 +8,7 @@ from .schema import PROFILE_COLUMNS, PROFILE_SCHEMA, to_profile_frame
 from .preprocess import add_tokens, normalize, preprocess
 from .features import build_features, idf_weights, vocabulary
 from .similarity import compute_similar, featurize, top_k_similar
+from .partners import compute_partners, phrase_key
 
 __all__ = [
     "PROFILE_COLUMNS",
@@ -22,4 +23,6 @@ __all__ = [
     "compute_similar",
     "featurize",
     "top_k_similar",
+    "compute_partners",
+    "phrase_key",
 ]

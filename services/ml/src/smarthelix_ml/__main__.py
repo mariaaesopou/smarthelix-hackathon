@@ -10,6 +10,7 @@ from pyspark.sql import Window, functions as F
 
 from .db import load_profiles_jdbc
 from .features import DEFAULT_MIN_DF, build_features, idf_weights, vocabulary
+from .partners import compute_partners
 from .similarity import DEFAULT_K, top_k_similar
 from .preprocess import preprocess
 from .session import get_spark
@@ -62,6 +63,25 @@ def main() -> None:
         (similar.where(F.col("profile_id") == p.id).where("rank <= 5")
          .join(info.withColumnRenamed("id", "similar_id"), "similar_id")
          .orderBy("rank").select("rank", F.round("score", 3).alias("score"), "name", "type", "sector", "region")
+         .show(truncate=False))
+
+    # Potential partners: the same 5 profiles, with what they need and why each partner fits.
+    start = time.perf_counter()
+    partners = compute_partners(df).cache()
+    rows = partners.count()
+    with_needs = df.where(F.size("needs") > 0).select("id")
+    without = with_needs.join(partners.select(F.col("profile_id").alias("id")).distinct(), "id", "left_anti")
+    print(f"\npotential_partners: {rows} rows in {time.perf_counter() - start:.1f}s, "
+          f"profiles with needs: {with_needs.count()}, of them without a partner: {without.count()}")
+    for r in without.join(df, "id").select("name", "needs").limit(3).collect():
+        print(f"  no partner: {r.name}: needs {r.needs}")
+    for p in sample:
+        needs = df.where(F.col("id") == p.id).first().needs
+        print(f"\n{p.name} ({p.type}, {p.region}) needs {needs} -> top 3 partners:")
+        (partners.where(F.col("profile_id") == p.id).where("rank <= 3")
+         .join(info.withColumnRenamed("id", "partner_id"), "partner_id")
+         .orderBy("rank").select("rank", F.round("score", 3).alias("score"), "name", "type", "sector",
+                                 "region", F.get_json_object("reasons", "$.matched_needs").alias("matched_needs"))
          .show(truncate=False))
     spark.stop()
 
