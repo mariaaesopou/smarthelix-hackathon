@@ -12,4 +12,4 @@ class MlJob(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    batch_id: UUID
+    batchId: UUID | None = None

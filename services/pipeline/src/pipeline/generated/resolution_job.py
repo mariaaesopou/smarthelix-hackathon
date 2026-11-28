@@ -12,4 +12,4 @@ class ResolutionJob(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    sync_run_id: UUID
+    syncRunId: UUID

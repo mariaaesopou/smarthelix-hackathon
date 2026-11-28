@@ -1,5 +1,6 @@
 {
   "advisoryLocks": { "K_ERASURE": 72001, "K_ML": 72002 },
   "queues": ["etl", "resolution", "ml"],
-  "exitCodes": { "success": 0, "permanent": 65, "retryable": 75 }
+  "exitCodes": { "success": 0, "permanent": 65, "retryable": 75 },
+  "syncSources": ["source_a", "source_b"]
 }

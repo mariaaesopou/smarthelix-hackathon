@@ -2,15 +2,29 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "etl-job.json",
   "title": "EtlJob",
+  "description": "Payload of a job on the etl queue (apps/worker EtlJobData). POST /sync/{source} creates the sync_runs row first and uses its id as the job id (architecture rule 8).",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "sync_run_id"
+    "source",
+    "mode"
   ],
   "properties": {
-    "sync_run_id": {
+    "syncRunId": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "sync_runs row the connector continues; omitted for a run started outside the API."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "full",
+        "incremental"
+      ]
     }
   }
 }

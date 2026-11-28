@@ -14,12 +14,15 @@ import uuid
 
 from ..connectors.http import SourceUnavailable
 from ..connectors.source_a import SourceAConnector
+from ..connectors.source_b import SourceBConnector
 from ..db import connect
 from ..errors import RetryableError
 from ..etl.run import RunAlreadyActive, run_etl
 
+# Keep in step with syncSources in packages/shared/constants.json (the API's /sync list).
 CONNECTORS = {
     "source_a": SourceAConnector,
+    "source_b": SourceBConnector,
 }
 
 
